@@ -3,6 +3,7 @@
 
 struct FileData
 {
+	//for testing
 	int fileSize = 80000;
 
 };
