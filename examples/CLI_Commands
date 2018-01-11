@@ -1,0 +1,8 @@
+To Start REDIS Database
+--------------------------------------
+LD_LIBRARY_PATH=/home/graves/build-dir
+export LD_LIBRARY_PATH
+
+g++ "file.cpp" -o "output file" -std=c++11 -lredox -lev -lhiredis
+
+--------------------------------------
