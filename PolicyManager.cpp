@@ -18,10 +18,13 @@ void PolicyManager::addPolicy(Policy* p)
 
 std::string PolicyManager::getListString()
 {
+    FileData test;
+    test.fileSize = 4;
+
     std::string reply = "";
     std::list<Policy*>::iterator it;
     for (it = policyList.begin(); it != policyList.end(); ++it) {
-        bool contents = (*it)->isFileKept();
+        bool contents = (*it)->isFileKept(test);
         reply += (contents ? "Size " : "LRU ");
     }
     return reply;

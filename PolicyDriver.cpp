@@ -8,12 +8,15 @@ using namespace std;
 
 int main() {
   PolicyManager pm;
-  SizePolicy sp;
-  LRUPolicy lp1, lp2;
+  SizePolicy* sp = new SizePolicy(5);
+  LRUPolicy* lp1 = new LRUPolicy();
+  LRUPolicy* lp2 = new LRUPolicy();
 
-  pm.addPolicy(new SizePolicy());
-  pm.addPolicy(new SizePolicy());
-  pm.addPolicy(new LRUPolicy());
+  pm.addPolicy(sp);
+  pm.addPolicy(lp1);
+  pm.addPolicy(lp2);
+
+  delete sp, lp1, lp2;
 
   std::cout << pm.getListString() << std::endl;
 

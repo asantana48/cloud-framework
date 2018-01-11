@@ -4,6 +4,7 @@
 #include "Policy.h"
 #include "SizePolicy.h"
 #include "LRUPolicy.h"
+#include "FileData.h"
 
 #include <list>
 #include <string>

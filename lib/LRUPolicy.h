@@ -5,7 +5,7 @@
 class LRUPolicy: public Policy {
 public:
     // TODO add logic
-    bool isFileKept() {
+    bool isFileKept(FileData dataObject) {
         return false;
     }
 };

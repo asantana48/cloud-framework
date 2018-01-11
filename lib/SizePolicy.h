@@ -1,12 +1,13 @@
 #ifndef SIZEPOLICY_H
 #define SIZEPOLICY_H
 
-#include "DataObject.h"
+#include "FileData.h"
 #include "Policy.h"
 
 class SizePolicy : public Policy {
 private:
 	int threshold;
+
 public:
 	SizePolicy::SizePolicy(int newThreshold)
 	{

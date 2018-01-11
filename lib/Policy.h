@@ -1,10 +1,11 @@
 #ifndef POLICY_H
 #define POLICY_H
 
-#include <string>
+#include "FileData.h"
+
 class Policy {
 public:
     // TODO - add file type paramater
-    virtual bool isFileKept() = 0;
+    virtual bool isFileKept(FileData fd) = 0;
 };
 #endif
