@@ -1,9 +1,0 @@
-
-
-struct FileData
-{
-	int fileSize;
-
-};
-
-
