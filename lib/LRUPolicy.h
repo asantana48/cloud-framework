@@ -8,5 +8,8 @@ public:
     bool isFileKept(FileData dataObject) {
         return false;
     }
+    bool isFileKept(std::list<FileData> dataList) {
+
+    }
 };
 #endif

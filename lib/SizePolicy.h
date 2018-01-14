@@ -7,24 +7,22 @@
 class SizePolicy : public Policy {
 private:
 	int threshold;
+    bool greaterThan;
 
 public:
-	SizePolicy::SizePolicy(int newThreshold)
+	SizePolicy::SizePolicy(int newThreshold, bool migrateGreater)
 	{
 		threshold = newThreshold;
+        greaterThan = migrateGreater;
 	}
 
 
 	bool isFileKept(FileData dataObject) 
 	{
-		if (dataObject.fileSize < threshold)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+        if (greaterThan)
+            return dataObject.fileSize >= threshold;
+        else
+            return dataObject.fileSize <= threshold;
 	}
 };
 #endif
