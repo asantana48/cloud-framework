@@ -5,6 +5,7 @@
 
 class Policy {
 public:
+    ~Policy() {}
     // TODO - add file type paramater
     virtual bool isFileKept(FileData fd) = 0;
 };
