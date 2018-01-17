@@ -1,10 +1,18 @@
 #include "lib/AWSConnector.h"
 
+AWSConnector::AWSConnector() {
+	Aws::InitAPI(options);
+}
+
+AWSConnector::~AWSConnector() {
+	Aws::ShutdownAPI(options);
+}
+
 void AWSConnector::connect(std::string region) {
     clientConfig.region = region.c_str();
-
-    delete client;
-    client = new Aws::S3::S3Client(clientConfig);
+	if (client)
+		client.reset();
+	client = std::make_unique<Aws::S3::S3Client>(clientConfig);
 }
 
 void AWSConnector::listBuckets()
@@ -31,9 +39,9 @@ void AWSConnector::listBuckets()
     }
 }
 
-void AWSConnector::setBucket(Aws::String bucket)
+void AWSConnector::setBucket(std::string bucket)
 {
-    currentBucket = bucket;
+    currentBucket = bucket.c_str();
 }
 
 void AWSConnector::listObjects()
@@ -66,26 +74,26 @@ void AWSConnector::listObjects()
     }
 }
 
+void AWSConnector::listObjects(std::string bucket) {
+	setBucket(bucket);
+	listObjects();
+}
 
-void AWSConnector::getObject(Aws::String source, Aws::String destination)
+void AWSConnector::getObject(std::string source, std::string destination)
 {
-   const Aws::String bucket_name = "";
-    const Aws::String key_name = "";
 
-    std::cout << "Downloading " << key_name << " from S3 bucket: " <<
-        bucket_name << std::endl;
-
-    Aws::S3::S3Client s3_client;
+    std::cout << "Downloading " << source << " from S3 bucket: " <<
+        currentBucket << " as " << destination << std::endl;
 
     Aws::S3::Model::GetObjectRequest object_request;
-    object_request.WithBucket(bucket_name).WithKey(key_name);
+    object_request.WithBucket(currentBucket).WithKey(source.c_str());
 
-    auto get_object_outcome = s3_client.GetObject(object_request);
+    auto get_object_outcome = client->GetObject(object_request);
 
     if (get_object_outcome.IsSuccess())
     {
         Aws::OFStream local_file;
-        local_file.open(key_name.c_str(), std::ios::out | std::ios::binary);
+        local_file.open(destination.c_str(), std::ios::out | std::ios::binary);
         local_file << get_object_outcome.GetResult().GetBody().rdbuf();
         std::cout << "Done!" << std::endl;
     }
@@ -99,13 +107,13 @@ void AWSConnector::getObject(Aws::String source, Aws::String destination)
 
 
 
-void AWSConnector::putObject(Aws::String source, Aws::String dest)
+void AWSConnector::putObject(std::string source, std::string destination)
 {
     std::cout << "Uploading " << source << " to S3 bucket " <<
-        currentBucket << " as " << dest << std::endl;
+        currentBucket << " as " << destination << std::endl;
 
     Aws::S3::Model::PutObjectRequest object_request;
-    object_request.WithBucket(currentBucket).WithKey(dest);
+    object_request.WithBucket(currentBucket).WithKey(destination.c_str());
 
     auto input_data = Aws::MakeShared<Aws::FStream>("PutObjectInputStream",
         source.c_str(), std::ios_base::in | std::ios_base::binary);
