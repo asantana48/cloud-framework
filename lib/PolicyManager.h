@@ -3,7 +3,7 @@
 
 #include "Policy.h"
 #include "SizePolicy.h"
-#include "LRUPolicy.h"
+#include "TimePolicy.h"
 #include "FileData.h"
 
 #include <list>
