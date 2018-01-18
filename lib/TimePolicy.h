@@ -1,5 +1,5 @@
-#ifndef LRUPOLICY_H
-#define LRUPOLICY_H
+#ifndef TIMEPOLICY_H
+#define TIMEPOLICY_H
 
 #include "Policy.h"
 #include <ctime>
