@@ -1,6 +1,6 @@
 #include "lib/PolicyManager.h"
 #include "lib/SizePolicy.h"
-#include "lib/LRUPolicy.h"
+#include "lib/TimePolicy.h"
 
 #include <iostream>
 
