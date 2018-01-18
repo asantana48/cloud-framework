@@ -1,10 +1,10 @@
-#ifndef TIMEPOLICY_H
-#define TIMEPOLICY_H
+#ifndef LRUPOLICY_H
+#define LRUPOLICY_H
 
 #include "Policy.h"
 #include <ctime>
 
-class LRUPolicy : public Policy {
+class TimePolicy : public Policy {
 
 private:
 	long int minimumAge;
@@ -12,13 +12,13 @@ private:
 public:
 
 	//Takes minimum age for file to be migrated in seconds
-	LRUPolicy::LRUPolicy(long int minAge)
+	TimePolicy::TimePolicy(long int minAge)
 	{
 		minimumAge = minAge;
 	}
 
 	//Takes minimum age for file to be migrated in years, months, days, hours, minutes, seconds format
-	LRUPolicy::LRUPolicy(long int years, long int months, long int days, long int hours, long int minutes, long int seconds)
+	TimePolicy::TimePolicy(long int years, long int months, long int days, long int hours, long int minutes, long int seconds)
 	{
 		//convert years, months, etc. to seconds
 		years = years * 31536000;
