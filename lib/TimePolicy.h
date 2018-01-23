@@ -47,9 +47,5 @@ public:
 		}
 
 	}
-	bool isFileKept(std::list<FileData> dataList) 
-	{
-
-	}
 };
 #endif

@@ -75,9 +75,10 @@ int main(int argc, char* argv[])
 		return -1;
 
 	std::string region = "us-east-2";
+	std::string bucket = "devon-bucket";
 
 	std::string command;
-	std::string bucket;
+	
 	std::string sourceFile;
 	std::string destFile;
 	
@@ -110,17 +111,27 @@ int main(int argc, char* argv[])
 	}
 
 	// 4 argument commands
-	/*
 	if (argc < 4)
 		return -1;
+	
+	aws.setBucket(bucket);
 
 	sourceFile = argv[3];
 
+	// 5 argument commands
+	if (argc < 5)
+		destFile = sourceFile;
+	else
+		destFile = argv[4];
+
 	if (command.compare("download") == 0)
 	{
-		aws.getObject(bucket, sourceFile);
+		aws.getObject(sourceFile, destFile);
 	}
-
+	else if (command.compare("upload") == 0)
+	{
+		aws.putObject(sourceFile, destFile);
+	}
 
 	//set policy
 	/*if (command.compare("setPolicy") == 0)
@@ -133,15 +144,8 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	// 5 argument commands
-	if (argc < 5)
-		return -1;
+	
 
-	destFile = argv[4];
-
-	if (command.compare("upload") == 0)
-	{
-		aws.putObject(sourceFile, destFile);
-	}*/
+	*/
 	return 0;
 }
