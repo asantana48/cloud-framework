@@ -35,7 +35,7 @@ public:
 	bool isFileKept(FileData dataObject) 
 	{
 		//if last access is before current time minus minimum age of files to be migrated
-		if (dataObject.lastAccessed <= (time(NULL) - minimumAge))
+		if (dataObject.lastModified <= (time(NULL) - minimumAge))
 		{
 			//migrate the file
 			return false;
