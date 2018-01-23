@@ -1,0 +1,2 @@
+/usr/bin/ar qc libredox_static.a  CMakeFiles/redox_static.dir/src/client.cpp.o CMakeFiles/redox_static.dir/src/command.cpp.o CMakeFiles/redox_static.dir/src/subscriber.cpp.o CMakeFiles/redox_static.dir/src/utils/logger.cpp.o
+/usr/bin/ranlib libredox_static.a
