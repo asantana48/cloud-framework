@@ -8,18 +8,23 @@ using namespace std;
 
 int main()
 {
+	list<FileData> flist;
+	FileData fd1, fd2;
+
+	fd1.fileSize = 500;
+	fd2.fileSize = 1500;
+
+	flist.push_back(fd1);
+	flist.push_back(fd2);
+
 	PolicyManager pm;
-	SizePolicy* sp = new SizePolicy(5, true);
-	TimePolicy* lp1 = new TimePolicy(500);
-	TimePolicy* lp2 = new TimePolicy(600);
+	pm.addPolicy(new SizePolicy(1024, true));
+	pm.addPolicy(new SizePolicy(2048, false));
 
-	pm.addPolicy(sp);
-	pm.addPolicy(lp1);
-	pm.addPolicy(lp2);
-
-	//delete sp, lp1, lp2;
-
-	std::cout << pm.getListString() << std::endl;
-
+	list<FileData> migrate = pm.getFileDemotionList(flist);
+	 
+	for (auto it = migrate.begin(); it != migrate.end(); ++it) {
+		cout << it->fileSize << endl;
+	}
 	return 0;
 }

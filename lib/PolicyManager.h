@@ -19,7 +19,8 @@ public:
 
     void addPolicy(Policy* p);
 
-    std::string getListString(); // Temp
+	bool isFilePromoted(FileData fd);
+	std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
 
 };
 #endif

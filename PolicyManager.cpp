@@ -2,7 +2,7 @@
 
 PolicyManager::~PolicyManager()
 {
-    std::list<Policy*>::iterator it = policyList.begin();
+    auto it = policyList.begin();
     while (it != policyList.end()) {
         delete *it;
         it = policyList.erase(it);
@@ -14,18 +14,31 @@ void PolicyManager::addPolicy(Policy* p)
     policyList.push_back(p);
 }
 
-
-
-std::string PolicyManager::getListString()
+bool PolicyManager::isFilePromoted(FileData fd)
 {
-    FileData test;
-    test.fileSize = 4;
+	auto it = policyList.begin();
+	return false;
+}
 
-    std::string reply = "";
-    std::list<Policy*>::iterator it;
-    for (it = policyList.begin(); it != policyList.end(); ++it) {
-        bool contents = (*it)->isFileKept(test);
-        reply += (contents ? "Size " : "LRU ");
-    }
-    return reply;
+std::list<FileData> PolicyManager::getFileDemotionList(std::list<FileData> fileList)
+{
+	std::list<FileData> migrationList;
+
+	auto policyIt = policyList.begin();
+	auto fileIt = fileList.begin();
+	
+	// Run through all policies for every file
+	for (auto fileIt = fileList.begin(); fileIt != fileList.end(); ++fileIt) {
+		bool needsMigrated = true;
+		for (auto policyIt = policyList.begin(); policyIt != policyList.end(); ++policyIt) {
+			if ((*policyIt)->isFileKept(*fileIt)) {
+				needsMigrated = false;
+				break;
+			}
+		}
+		if (needsMigrated)
+			migrationList.push_back(*fileIt);
+	}
+
+	return migrationList;
 }
