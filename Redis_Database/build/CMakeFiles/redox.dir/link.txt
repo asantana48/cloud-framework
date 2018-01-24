@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC  -std=c++11 -fPIC -Wall -O3 -DNDEBUG  -shared -Wl,-soname,libredox.so.0 -o libredox.so.0.3.0 CMakeFiles/redox.dir/src/client.cpp.o CMakeFiles/redox.dir/src/command.cpp.o CMakeFiles/redox.dir/src/subscriber.cpp.o CMakeFiles/redox.dir/src/utils/logger.cpp.o -lhiredis -lev -lpthread 

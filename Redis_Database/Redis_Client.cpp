@@ -14,14 +14,14 @@ void increment_Key()
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	rdx.command<string>({"INCR", "Key"}, [](Command<string>& c){
+	Command<int>& c = rdx.commandSync<int>({"INCR", "Key"});
 		if(c.ok()) {
-			cout << "Hello, async " << c.reply() << endl;
+			cout << "The key value is at " << c.reply() << endl;
 		}
 		else {
 			cerr << "Command has error code " << c.status() << endl;
 		}
-	});
+	c.free();
 	rdx.disconnect();
 }
 
@@ -32,6 +32,7 @@ string get_Key()
 	rdx.connect("localhost", 6379);
 	string key = rdx.get("Key");
 	increment_Key();
+	rdx.stop();
 	rdx.disconnect();
 	return key;
 }
@@ -42,37 +43,34 @@ void Redis_HMSET(string fileName, string fileSize)
 	
 	rdx.connect("localhost", 6379);
 	
-		string redisKey = get_Key();
-		rdx.command<string>({"HMSET", redisKey, "File_Name", fileName, "File_Size", fileSize}, [](Command<string>& c) {
+	string redisKey = get_Key();
+	Command<string>& c = rdx.commandSync<string>({"HMSET", redisKey, "File_Name", fileName, "File_Size", fileSize});
 			if(c.ok()) {
-				cout << "Hello, async " << c.reply() << endl;
+				cout << c.cmd() <<": " << c.reply() << endl;
 			}
 			else {
 				cerr << "Command has error code " << c.status() << endl;
 			}
-		});
+	c.free();
 	rdx.disconnect();
 }
 
 
-void Redis_HGETALL(string key)
+vector<string> Redis_HGETALL(string key)
 {
 	Redox rdx;
 	
 	rdx.connect("localhost", 6379);
 
-		rdx.command<string>({"HGETALL", key}, [](Command<string>& c) {
-			if(c.ok()) {
-				cout << "Hello, async " << c.reply() << endl;
-				//return c.reply();
-			}
-			else {
-				cerr << "Command has error code " << c.status() << endl;
-				//return c.status;
-			}
-			
-		});
-	
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"HGETALL", key});
+
+	cout << c.cmd() << ": " << c.status() << endl;
+
+	c.free();
+		
+	rdx.disconnect();
+
+	return c.reply();
 }
 
 

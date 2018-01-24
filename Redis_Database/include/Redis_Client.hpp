@@ -16,6 +16,7 @@ using redox::Subscriber;
 void increment_Key();
 string get_Key();
 void Redis_HMSET(string, string);
+vector<string> Redis_HGETALL(string);
 
 
 #endif

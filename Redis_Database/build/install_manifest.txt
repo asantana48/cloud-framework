@@ -1,9 +1,0 @@
-/usr/local/lib64/libredox.so.0.3.0
-/usr/local/lib64/libredox.so.0
-/usr/local/lib64/libredox.so
-/usr/local/lib64/libredox_static.a
-/usr/local/include/redox/client.hpp
-/usr/local/include/redox/subscriber.hpp
-/usr/local/include/redox/command.hpp
-/usr/local/include/redox/utils/logger.hpp
-/usr/local/include/redox.hpp
