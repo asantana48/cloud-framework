@@ -14,9 +14,17 @@ void PolicyManager::addPolicy(Policy* p)
     policyList.push_back(p);
 }
 
+void PolicyManager::setMaxSaturation(int saturation)
+{
+    this->saturation = saturation;
+}
+
 bool PolicyManager::isFilePromoted(FileData fd)
 {
-	auto it = policyList.begin();
+    for (auto it = policyList.begin(); it != policyList.end(); ++it) {
+
+    }
+
 	return false;
 }
 

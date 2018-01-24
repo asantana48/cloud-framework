@@ -9,17 +9,23 @@ using namespace std;
 int main()
 {
 	list<FileData> flist;
-	FileData fd1, fd2;
+	FileData smallOld, mediumOld, mediumNew, largeNew;
 
-	fd1.fileSize = 500;
-	fd2.fileSize = 1500;
+    smallOld.fileSize = 500;
+	mediumOld.fileSize = 1500;
+    mediumNew.fileSize = 1500;
+    largeNew.fileSize = 2000;
 
-	flist.push_back(fd1);
-	flist.push_back(fd2);
+    flist.push_back(smallOld);
+	flist.push_back(mediumOld);
+    flist.push_back(mediumNew);
+    flist.push_back(largeNew);
 
 	PolicyManager pm;
-	pm.addPolicy(new SizePolicy(1024, true));
-	pm.addPolicy(new SizePolicy(2048, false));
+
+    // Defined policies
+	pm.addPolicy(new SizePolicy(1280, true));
+    pm.addPolicy(new SizePolicy(2048, false));
 
 	list<FileData> migrate = pm.getFileDemotionList(flist);
 	 
