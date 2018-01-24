@@ -20,9 +20,9 @@ public:
 	bool isFileKept(FileData dataObject) 
 	{
         if (greaterThan)
-            return dataObject.fileSize >= threshold;
-        else
             return dataObject.fileSize <= threshold;
+        else
+            return dataObject.fileSize >= threshold;
 	}
 };
 #endif

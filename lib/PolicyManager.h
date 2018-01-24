@@ -13,13 +13,17 @@
 class PolicyManager {
 private:
     std::list<Policy*> policyList;
+    
+    // Out of 100
+    int saturation;
 public:
     PolicyManager() {}
     ~PolicyManager();
 
     void addPolicy(Policy* p);
-
-    std::string getListString(); // Temp
+    void setMaxSaturation(int saturation);
+	bool isFilePromoted(FileData fd);
+	std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
 
 };
 #endif
