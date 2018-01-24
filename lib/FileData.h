@@ -4,7 +4,6 @@
 #include <sstream>
 #include <ctime>
 
-using namespace std;
 
 struct FileData
 {
@@ -12,21 +11,18 @@ struct FileData
 	time_t lastModified;
 
 
-	string getFileSizeAsString()
+	std::string getFileSizeAsString()
 	{
-		stringstream s;
+        std::stringstream s;
 		s << fileSize;
 		return s.str();
 	}
 
-	string getLastModifiedAsString()
+    std::string getLastModifiedAsString()
 	{
-		stringstream s;
+        std::stringstream s;
 		s << lastModified;
 		return s.str();
 	}
-
-
-
 };
 #endif
