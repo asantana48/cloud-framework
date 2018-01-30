@@ -12,9 +12,14 @@ int main()
 	FileData smallOld, mediumOld, mediumNew, largeNew;
 
     smallOld.fileSize = 500;
-	mediumOld.fileSize = 1500;
+	mediumOld.fileSize = 1450;
     mediumNew.fileSize = 1500;
     largeNew.fileSize = 2000;
+
+    smallOld.lastModified = time(NULL) - 5000;
+    mediumOld.lastModified = time(NULL) - 5000;
+    mediumNew.lastModified = time(NULL) - 20000;
+    largeNew.lastModified = time(NULL) - 20000;
 
     flist.push_back(smallOld);
 	flist.push_back(mediumOld);
@@ -25,7 +30,8 @@ int main()
 
     // Defined policies
 	pm.addPolicy(new SizePolicy(1280, true));
-    pm.addPolicy(new SizePolicy(2048, false));
+    pm.addPolicy(new SizePolicy(1600, false));
+    pm.addPolicy(new TimePolicy(8000));
 
 	list<FileData> migrate = pm.getFileDemotionList(flist);
 	 
