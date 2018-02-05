@@ -1,8 +1,8 @@
 #ifndef SIZEPOLICY_H
 #define SIZEPOLICY_H
 
-#include "FileData.h"
-#include "Policy.h"
+#include "FileData.hpp"
+#include "Policy.hpp"
 
 class SizePolicy : public Policy {
 private:

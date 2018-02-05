@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "lib/AWSConnector.h"
+#include "lib/AWSConnector.hpp"
 
 
 

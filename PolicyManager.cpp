@@ -1,4 +1,4 @@
-#include "lib/PolicyManager.h"
+#include "lib/PolicyManager.hpp"
 
 PolicyManager::~PolicyManager()
 {

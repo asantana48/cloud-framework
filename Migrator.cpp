@@ -1,6 +1,6 @@
-#include "lib/AWSConnector.h"
-#include "lib/PolicyManager.h"
-#include "lib/FileData.h"
+#include "lib/AWSConnector.hpp"
+#include "lib/PolicyManager.hpp"
+#include "lib/FileData.hpp"
 
 #include <iostream>
 

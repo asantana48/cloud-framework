@@ -1,7 +1,7 @@
 #ifndef LRUPOLICY_H
 #define LRUPOLICY_H
 
-#include "Policy.h"
+#include "Policy.hpp"
 #include <ctime>
 
 class TimePolicy : public Policy {

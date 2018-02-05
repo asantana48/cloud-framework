@@ -1,10 +1,10 @@
 #ifndef POLICYMANAGER_H
 #define POLICYMANAGER_H
 
-#include "Policy.h"
-#include "SizePolicy.h"
-#include "TimePolicy.h"
-#include "FileData.h"
+#include "Policy.hpp"
+#include "SizePolicy.hpp"
+#include "TimePolicy.hpp"
+#include "FileData.hpp"
 
 #include <list>
 #include <string>

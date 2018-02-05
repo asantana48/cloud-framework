@@ -1,4 +1,4 @@
-#include "lib/AWSConnector.h"
+#include "lib/AWSConnector.hpp"
 
 AWSConnector::AWSConnector() {
 	Aws::InitAPI(options);

@@ -1,8 +1,8 @@
 #ifndef HITSPOLICY_H
 #define HITSPOLICY_H
 
-#include "FileData.h"
-#include "Policy.h"
+#include "FileData.hpp"
+#include "Policy.hpp"
 
 class HitPolicy : public Policy {
 private:
