@@ -4,12 +4,12 @@
 #include "FileData.h"
 #include "Policy.h"
 
-class HitsPolicy : public Policy {
+class HitPolicy : public Policy {
 private:
     int hits;
 
 public:
-    HitsPolicy::HitsPolicy(int numHits)
+    HitPolicy::HitPolicy(int numHits)
     {
         hits = numHits;
     }
