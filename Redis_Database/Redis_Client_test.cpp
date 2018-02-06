@@ -1,10 +1,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
 #include "stdlib.h"
 
 #include "include/redox.hpp"
 #include "include/Redis_Client.hpp"
+#include "include/FileData.hpp"
 
 
 using namespace std;
@@ -32,19 +34,37 @@ int main(int argc, char* argv[])
 			cerr << "Command has error code " << c.status() << endl;
 		}
 	});
-	
-			//DO NOT DELETE THIS CODE!!!
-/*DO NOT TOUCH THIS KEY!!! */ rdx.set("Key", "1"); /*BACK AWAY FROM THIS LINE!!*/
-			// DO NOT DELETE THIS KEY!!!!
-	
-	Redis_HMSET("File1", "500");
-	Redis_HMSET("File2", "800");
-	Redis_HMSET("File3", "575");
-	
-	vector<string> metaData = Redis_HGETALL("1");
 
+	
+	Redis_Client RC;
+
+	time_t currentTime;
+
+	struct FileData File1 = {"/home/file1", "File1", 500, 12, currentTime, true};
+	struct FileData File2 = {"/home/file2", "File2", 260, 25, currentTime, true};
+
+	RC.Redis_HMSET(File1);
+	RC.Redis_HMSET(File2);
+	
+	vector<string> metaData = RC.Redis_HGETALL("/home/file1");
+
+	
 	for (int i=0; i<metaData.size(); i++)
 	{ 
-	cout << metaData[i] << endl;
+		cout << metaData[i] << endl;
 	}
+
+	
+	/*vector<string> keys = RC.Redis_List_All_Keys();
+	cout << "BREAK\n";
+	*/
+
+	/*
+	for (int i=0; i<keys.size(); i++)
+	{ 
+		cout << keys[i] << endl;
+	}
+	*/
+
+	
 }
