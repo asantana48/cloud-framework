@@ -55,7 +55,7 @@ std::list<FileData> PolicyManager::getFileDemotionList(std::list<FileData> fileL
 	return migrationList;
 }
 
-private void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
+void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	xmlChar *key;
 	while (cur != NULL)
@@ -82,7 +82,7 @@ private void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	}
 }
 
-private void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
+void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	xmlChar *key;
 	cur = cur->xmlChildrenNode;
@@ -106,7 +106,7 @@ private void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	}
 }
 
-private static void PolicyManager::streamFile(const char *filename) {
+static void PolicyManager::streamFile(const char *filename) {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
 	doc = xmlParseFile(filename);
@@ -149,7 +149,7 @@ private static void PolicyManager::streamFile(const char *filename) {
 
 }
 
-public void parsePoliciesFromXMLFile() 
+void parsePoliciesFromXMLFile() 
 {
     char configFileName[] = "policies.xml";
 
