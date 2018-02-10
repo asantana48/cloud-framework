@@ -1,0 +1,9 @@
+<policies>
+	<sizepolicy>
+		<name>size</name>
+		<range>
+			<min>52</min>
+			<max>135</max>
+		</range>
+	</sizepolicy>
+</policies>
