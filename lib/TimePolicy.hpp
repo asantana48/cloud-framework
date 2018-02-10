@@ -12,13 +12,13 @@ private:
 public:
 
 	//Takes minimum age for file to be migrated in seconds
-	TimePolicy::TimePolicy(long int minAge)
+	TimePolicy(long int minAge)
 	{
 		minimumAge = minAge;
 	}
 
 	//Takes minimum age for file to be migrated in years, months, days, hours, minutes, seconds format
-	TimePolicy::TimePolicy(long int years, long int months, long int days, long int hours, long int minutes, long int seconds)
+	TimePolicy(long int years, long int months, long int days, long int hours, long int minutes, long int seconds)
 	{
 		//convert years, months, etc. to seconds
 		years = years * 31536000;

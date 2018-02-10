@@ -4,13 +4,14 @@
 #include <cstdint>
 #include <cstdio>
 #include <string>
+#include <vector>
 
-#include <io.h>   // replace with unistd for linux
-//#include <dirent.h>
+#include <unistd.h>   // replace with unistd for linux
+#include <dirent.h>
 
 class FileUtils {
 public:
-    int Read(int handle, char* data, int bytesToRead, int &bytesRead) {
+    static int Read(int handle, char* data, int bytesToRead, int &bytesRead) {
         bytesRead = 0;
         while (bytesRead < bytesToRead) {
             bytesRead += read(handle, data + bytesRead, bytesToRead - bytesRead);
@@ -21,7 +22,7 @@ public:
         return 0;
     }
 
-    int Write(int handle, char* data, int bytesToWrite, int &bytesWritten) {
+    static int Write(int handle, char* data, int bytesToWrite, int &bytesWritten) {
         bytesWritten = 0;
         while (bytesWritten < bytesToWrite) {
             bytesWritten += write(handle, data + bytesWritten, bytesToWrite);
@@ -31,11 +32,19 @@ public:
         }
         return 0;
     }
+    static std::vector<std::string> List(char const* path) {
+        std::vector<std::string> files;
+        
+        DIR *dp;
+        struct dirent *dirp;
+        if ((dp = opendir(path)) != NULL) {
+            while ((dirp =readdir(dp)) != NULL) {
+                if (strcmp(dirp->d_name, ".") != 0 && strcmp(dirp->d_name, ".."))
+                    files.push_back(std::string(dirp->d_name));
+            }
+        }
 
-    /*int List(char* path, char* url, &pListDataOut,
-        &listDataSize,
-        attrFlag,
-        partialMatchingFlag,
-        addURLPrefix);*/
+        return files;
+    }
 };
 #endif
