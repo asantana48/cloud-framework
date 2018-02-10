@@ -10,6 +10,12 @@
 #include <iostream>
 #include <vector>
 
+using namespace std;
+
+// Constants
+static const string FILES_PATH = "/home/andres/Projects/cloud-framework/testfiles/";        // directory
+static const string POLICY_PATH = "/home/andres/Projects/cloud-framework/res/policies.xml"; // file
+
 /*
  * processNode:
  * @reader: the xmlReader
@@ -67,35 +73,34 @@ static void streamFile(const char *filename) {
     }
 }
 
-using namespace std;
 
 int main(int argc, char* argv[]) {
     AWSConnector aws;
     aws.setBucket("devon-bucket");
 
     // Get file list and metadata
-    char const* path = "/home/andres/Projects/cloud-framework/testfiles/";
-    char full_name[255];
-    vector<string> names = FileUtils::List(path);
+    vector<string> names = FileUtils::List(FILES_PATH.c_str());
     vector<FileData> files;
     struct stat statObj;
     for (auto it = names.begin(); it != names.end(); ++it) {
-        strcpy(full_name, path);
-        strcat(full_name, (*it).c_str());
-        stat(full_name, &statObj);
-        cout << full_name << endl;
-        cout << statObj.st_size << endl;
+        string full_path = FILES_PATH + (*it);
+        stat(full_path.c_str(), &statObj);
 
+        // Put information in metadata object
         FileData fd;
-        fd.location = full_name;
+        fd.location = full_path;
         fd.fileSize = statObj.st_size;
+
         files.push_back(fd);
     }
     
+    for (FileData i: files) {
+        cout << i.location << " (" << i.fileSize << ")\n";
+    }
     // Set policies
     PolicyManager pm;
     int MB12 = 12*1024*1024;
-    pm.setPolicy(new SizePolicy(MB12, false))
+    pm.addPolicy(new SizePolicy(MB12, false));
 
     return 0;
 }
