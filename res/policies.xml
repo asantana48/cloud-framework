@@ -1,9 +1,17 @@
-<policies>
-	<sizepolicy>
+<?xml version="1.0" ?>
+<policylist>
+	<policy>
+		<type>sizepolicy</type>
 		<name>size</name>
-		<range>
-			<min>52</min>
-			<max>135</max>
-		</range>
-	</sizepolicy>
-</policies>
+		<lowerbound>52</lowerbound>
+		<upperbound>135</upperbound>
+	</policy>
+
+	<policy>
+		<type>sizepolicy</type>
+		<name>size</name>
+		<lowerbound>50</lowerbound>
+		<upperbound>123</upperbound>
+	</policy>
+</policylist>
+
