@@ -2,6 +2,7 @@
 
 ## Requirements
 AWS SDK for C++: core, s3 components
+
 libxml2
 
 ## Compiling
