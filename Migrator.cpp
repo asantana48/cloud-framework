@@ -14,38 +14,38 @@
 using namespace std;
 
 // Constants
-static const string FILES_PATH = "/home/andres/Projects/cloud-framework/testfiles/";        // directory
+static const string FILES_PATH = "/home/andres/Projects/cloud-framework/testbed/";        // directory
 static const string POLICY_PATH = "/home/andres/Projects/cloud-framework/res/policies.xml"; // file
 
 int main(int argc, char* argv[]) {
-    AWSConnector aws;
-    aws.setBucket("devon-bucket");
+    // Get the policies from the file
+    PolicyManager pm;
+    pm.addPolicy(new SizePolicy(10*1024*1024, false));
 
     // Get file list and metadata
-    vector<string> names = FileUtils::List(FILES_PATH.c_str());
-    vector<FileData> files;
+    list<string> filenames = FileUtils::List(FILES_PATH.c_str());
+    list<FileData> files;
     struct stat statObj;
-    for (auto it = names.begin(); it != names.end(); ++it) {
-        string full_path = FILES_PATH + (*it);
+    for (string name: filenames) {
+        string full_path = FILES_PATH + name;
         stat(full_path.c_str(), &statObj);
 
         // Put information in metadata object
         FileData fd;
         fd.location = full_path;
+        cout << fd.getName() << endl;
         fd.fileSize = statObj.st_size;
         fd.lastModified = statObj.st_atime;
         files.push_back(fd);
     }
-    
-    for (FileData i: files) {
-        cout << i.location << " (" << i.fileSize << ")" << i.lastModified << "\n";
-    }
-    // Set policies
-    PolicyManager pm;
-    int MB12 = 12*1024*1024;
-    int atime = time(NULL) - 40000;
-    pm.addPolicy(new SizePolicy(MB12, false));
-    pm.addPolicy(new TimePolicy(atime));
 
+    AWSConnector aws;
+    aws.connect("us-east-2");
+    aws.setBucket("devon-bucket");
+
+    list<FileData> migrate = pm.getFileDemotionList(files);
+    for (FileData f: migrate) {
+        aws.putObject(f.location, f.getName());
+    }
     return 0;
 }

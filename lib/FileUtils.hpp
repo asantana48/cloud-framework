@@ -32,8 +32,8 @@ public:
         }
         return 0;
     }
-    static std::vector<std::string> List(char const* path) {
-        std::vector<std::string> files;
+    static std::list<std::string> List(char const* path) {
+        std::list<std::string> files;
         
         DIR *dp;
         struct dirent *dirp;

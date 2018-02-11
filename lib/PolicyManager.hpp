@@ -19,9 +19,9 @@ class PolicyManager {
 private:
     std::list<Policy*> policyList;
 	
-    void parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
-    void parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
-    static void streamFile(const char *filename)
+    void parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur);
+    void parsePolicy (xmlDocPtr doc, xmlNodePtr cur);
+    void streamFile(const char *filename);
     
     
     // Out of 100

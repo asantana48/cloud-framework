@@ -49,5 +49,11 @@ struct FileData
         return s.str();
     }
 
+    std::string getName() {
+        std::stringstream s;
+        s << location.substr(location.find_last_of("/")+1);
+        return s.str();
+    }
+
 };
 #endif

@@ -95,7 +95,7 @@ void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 			//there was a hit on finding the type of policy it is. Corresponding parsing function.
 			if(!xmlStrcmp(key, (const xmlChar *)"sizepolicy"))
 			{
-				parseSizePolicy(doc, cur);
+				this->parseSizePolicy(doc, cur);
 			}
 			xmlFree(key);
 
@@ -105,7 +105,7 @@ void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	}
 }
 
-static void PolicyManager::streamFile(const char *filename) {
+void PolicyManager::streamFile(const char *filename) {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
 	doc = xmlParseFile(filename);
@@ -141,19 +141,19 @@ static void PolicyManager::streamFile(const char *filename) {
 		//if there is a match, calls funciton parsePolicy
 		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policy")))
 		{
-			parsePolicy(doc, cur);
+			this->parsePolicy(doc, cur);
 		}
 	cur = cur->next;
 	}
 
 }
 
-void parsePoliciesFromXMLFile() 
+void PolicyManager::parsePoliciesFromXMLFile() 
 {
-    char configFileName[] = "policies.xml";
+    char configFileName[] = "/home/andres/Projects/cloud-framework/res/policies.xml";
 
   
-    streamFile(configFileName);
+    this->streamFile(configFileName);
 
     /*
      * Cleanup function for the XML library.
