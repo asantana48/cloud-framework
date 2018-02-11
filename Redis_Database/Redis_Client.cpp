@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
+#include "stdlib.h"
 
 
 #include "include/redox.hpp"
@@ -17,7 +19,7 @@ void Redis_Client::Redis_HMSET(FileData& file)
 {	
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	Command<string>& c = rdx.commandSync<string>({"HMSET", file.location, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", to_string(file.lastModified), "Is_Local", to_string(file.isLocal)});
+	Command<string>& c = rdx.commandSync<string>({"HMSET", file.location, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
 	if(c.ok()) {
 		cout << c.cmd() <<": " << c.reply() << endl;
 	}
@@ -30,16 +32,37 @@ void Redis_Client::Redis_HMSET(FileData& file)
 
 
 // Change this function to return a struct of FileData
-vector<string> Redis_Client::Redis_HGETALL(string key)
+FileData Redis_Client::Redis_HGETALL(string key)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"HGETALL", key});
+	
+	vector<string> metaData = c.reply();
+
+	FileData file;
+	file.location = key;
+	file.fileName = metaData[1];
+	file.fileSize = stoi(metaData[3]);
+	file.timesAccessed = stoi(metaData[5]);
+	file.lastModified = stringToTime_t(metaData[7]);
+	file.isLocal = stoi(metaData[9]);
+
 	c.free();
-		
 	rdx.disconnect();
-	return c.reply();
+
+	return file;
 }
+
+time_t Redis_Client::stringToTime_t(string stringTime)
+{
+	const char *time_details = stringTime.c_str();
+	struct tm tm;
+	strptime(time_details, "%A %B %d %H:%M:%S %Y", &tm);
+	time_t t = mktime(&tm);
+	return t;
+}
+
 
 // THIS FUNCTION NEEDS TESTING! RETURNS A SEGMENTATION FAULT!!!
 vector<string> Redis_Client::Redis_List_All_Keys()
@@ -137,6 +160,26 @@ string Redis_Client::deleteFile(string key)
 	return reply;
 }
 
+void Redis_Client::updateLastTimeModified(string key)
+{
+	time_t currentTime;
+	time(&currentTime); 
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Last_Modified", ctime(&currentTime)});
+
+	c.free();
+	rdx.disconnect();
+}
 
 
-
+/*
+void Redis_Client::setFileName(string key, string fileName)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Name", fileName});
+	c.free();
+	rdx.disconnect();
+}
+*/

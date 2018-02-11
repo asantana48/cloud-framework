@@ -38,21 +38,31 @@ int main(int argc, char* argv[])
 	
 	Redis_Client RC;
 
+	//struct tm * currentTime;
 	time_t currentTime;
+	time(&currentTime);
+	//currentTime = localtime(&t);
 
-	struct FileData File1 = {"/home/file1", "File1", 500, 12, currentTime, true};
-	struct FileData File2 = {"/home/file2", "File2", 260, 25, currentTime, true};
+	struct FileData File1 = {"/home/file1", "File1", 500, 120, currentTime, true};
+	struct FileData File2 = {"/home/file2", "File2", 260, 250, currentTime, true};
+	struct FileData File3 = {"/home/file3", "File3", 1024, 3000, currentTime, true};
+	struct FileData File4 = {"/home/file4", "File4", 780, 1000, currentTime, true};
 
 	RC.Redis_HMSET(File1);
 	RC.Redis_HMSET(File2);
+	RC.Redis_HMSET(File3);
+	RC.Redis_HMSET(File4);
 	
-	vector<string> metaData = RC.Redis_HGETALL("/home/file1");
+	
+	FileData metaData = RC.Redis_HGETALL("/home/file1");
 
+	cout << "File location: " << metaData.location << endl;
+	cout << "File name: " << metaData.fileName << endl;
+	cout << "File size: " << metaData.fileSize << endl;
+	cout << "Times accessed: " << metaData.timesAccessed << endl;
+	cout << "Last time modified: " << ctime(&metaData.lastModified) << endl;
+	cout << "Is local: " << metaData.isLocal << endl;
 	
-	for (int i=0; i<metaData.size(); i++)
-	{ 
-		cout << metaData[i] << endl;
-	}
 
 	
 	/*vector<string> keys = RC.Redis_List_All_Keys();
@@ -66,5 +76,17 @@ int main(int argc, char* argv[])
 	}
 	*/
 
+	RC.setFileName("/home/file3", "/home/file3A");
+
+	cout << "Name for file 3 is: " << RC.getFileName("/home/file3") << endl;
+
+	RC.setFileSize("/home/file4", "1000");
+
+	cout << "File size for file 4 is: " << RC.getFileSize("/home/file4") << endl;
+
+	RC.deleteFile("/home/file3");
+	
+	cout << "File size for file 3 is: " << RC.getFileSize("/home/file3") << endl;
+	
 	
 }
