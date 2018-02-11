@@ -12,8 +12,7 @@ struct FileData
 	int fileSize;
     int timesAccessed; // TODO add accessors
 	time_t lastModified;
-
-    bool isLocal;
+	bool isLocal;
 
     void setFileSize(std::string s) {
         fileSize = stoi(s);
