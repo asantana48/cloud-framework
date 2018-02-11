@@ -57,6 +57,7 @@ std::list<FileData> PolicyManager::getFileDemotionList(std::list<FileData> fileL
 void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	xmlChar *key;
+	cur = cur->xmlChildrenNode;
 	while (cur != NULL)
 	{
 
@@ -84,24 +85,12 @@ void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	xmlChar *key;
-	cur = cur->xmlChildrenNode;
-	while(cur != NULL)
+	xmlChar *policyType;
+	policyType = xmlGetProp(cur, (const xmlChar *)"type");
+	if (!xmlStrcmp(policyType, (const xmlChar *)"sizepolicy"))
 	{
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"type"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			printf("policy found of type: %s\n", key);
-
-			//there was a hit on finding the type of policy it is. Corresponding parsing function.
-			if(!xmlStrcmp(key, (const xmlChar *)"sizepolicy"))
-			{
-				this->parseSizePolicy(doc, cur);
-			}
-			xmlFree(key);
-
-			printf("\n");
-		}
-		cur = cur->next;
+		printf("Size policy Found!\n");
+		parseSizePolicy(doc, cur);
 	}
 }
 
@@ -141,7 +130,7 @@ void PolicyManager::streamFile(const char *filename) {
 		//if there is a match, calls funciton parsePolicy
 		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policy")))
 		{
-			this->parsePolicy(doc, cur);
+			parsePolicy(doc, cur);
 		}
 	cur = cur->next;
 	}
