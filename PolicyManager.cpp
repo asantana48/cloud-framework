@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <libxml/xmlreader.h>
 #include <libxml/parser.h>
-#include <string.h>
 
 PolicyManager::~PolicyManager()
 {
