@@ -7,47 +7,47 @@
 
 struct FileData
 {
-    std::string location;
+    	std::string location;
 	std::string fileName;
 	int fileSize;
-    int timesAccessed; // TODO add accessors
+    	int timesAccessed; // TODO add accessors
 	time_t lastModified;
 	bool isLocal;
 
-    void setFileSize(std::string s) {
-        fileSize = stoi(s);
-    }
+    	void setFileSize(std::string s) {
+        	fileSize = stoi(s);
+    	}
 
-    void setLastModified(std::string s) {
-        struct time_tm;
-    }
+    	void setLastModified(std::string s) {
+        	struct time_tm;
+    	}
 
-    void setIsLocal(std::string s) {
-        if (s.compare("true") == 0)
-            isLocal = true;
-        else if (s.compare("false") == 0)
-            isLocal = false;
-    }
+	void setIsLocal(std::string s) {
+        	if (s.compare("true") == 0)
+            		isLocal = true;
+       		else if (s.compare("false") == 0)
+            		isLocal = false;
+    	}
 
 	std::string getFileSize()
 	{
-        std::stringstream s;
+        	std::stringstream s;
 		s << fileSize;
 		return s.str();
 	}
 
-    std::string getLastModified()
+    	std::string getLastModified()
 	{
-        std::stringstream s;
+        	std::stringstream s;
 		s << lastModified;
 		return s.str();
 	}
 
-    std::string getIsLocal() {
-        std::stringstream s;
-        s << isLocal;
-        return s.str();
-    }
+    	std::string getIsLocal() {
+        	std::stringstream s;
+        	s << isLocal;
+        	return s.str();
+    	}
 
 };
 #endif

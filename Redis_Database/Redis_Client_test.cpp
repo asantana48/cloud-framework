@@ -65,28 +65,47 @@ int main(int argc, char* argv[])
 	
 
 	
-	/*vector<string> keys = RC.Redis_List_All_Keys();
-	cout << "BREAK\n";
-	*/
+	vector<string> keys = RC.Redis_List_All_Keys();
+	
 
-	/*
+	
 	for (int i=0; i<keys.size(); i++)
 	{ 
 		cout << keys[i] << endl;
 	}
-	*/
+	
 
 	RC.setFileName("/home/file3", "/home/file3A");
 
 	cout << "Name for file 3 is: " << RC.getFileName("/home/file3") << endl;
 
-	RC.setFileSize("/home/file4", "1000");
+	RC.setFileSize("/home/file3", "1000");
 
-	cout << "File size for file 4 is: " << RC.getFileSize("/home/file4") << endl;
+	cout << "File size for file 3 is: " << RC.getFileSize("/home/file3") << endl;
 
+	for(int i = 0; i<100; i++)
+	{
+		RC.incrementTimesAccessed("/home/file3");
+	}
+
+	cout << "File 3 has been accessed: " << RC.getTimesAccessed("/home/file3") << " times" << endl;
+
+
+	RC.setIsLocal("/home/file3", false);
+
+	cout << "File 3 is local? " << RC.getIsLocal("/home/file3") << endl;
+
+	RC.updateLastTimeModified("/home/file3");
+
+	time_t time = RC.getLastTimeModified("/home/file3");
+
+	cout << "File 3 was last modified at: " << ctime(&time) << endl;
+	
+/*	
 	RC.deleteFile("/home/file3");
 	
 	cout << "File size for file 3 is: " << RC.getFileSize("/home/file3") << endl;
+*/
 	
 	
 }

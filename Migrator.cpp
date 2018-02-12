@@ -1,9 +1,9 @@
-#include "lib/AWSConnector.hpp"
+//#include "lib/AWSConnector.hpp"
 #include "lib/PolicyManager.hpp"
 #include "lib/FileData.hpp"
 #include "lib/FileUtils.hpp"
 
-#include <libxml/xmlreader.h>
+//#include <libxml/xmlreader.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -14,8 +14,8 @@
 using namespace std;
 
 // Constants
-static const string FILES_PATH = "/home/andres/Projects/cloud-framework/testbed/";        // directory
-static const string POLICY_PATH = "/home/andres/Projects/cloud-framework/res/policies.xml"; // file
+static const string FILES_PATH = "/home/graves/cloud-framework/testbed/";        // directory
+static const string POLICY_PATH = "/home/graves/cloud-framework/res/policies.xml"; // file
 
 int main(int argc, char* argv[]) {
     // Get the policies from the file
@@ -39,13 +39,13 @@ int main(int argc, char* argv[]) {
         files.push_back(fd);
     }
 
-    AWSConnector aws;
+    /*AWSConnector aws;
     aws.connect("us-east-2");
     aws.setBucket("devon-bucket");
 
     list<FileData> migrate = pm.getFileDemotionList(files);
     for (FileData f: migrate) {
         aws.putObject(f.location, f.getName());
-    }
+    }*/
     return 0;
 }

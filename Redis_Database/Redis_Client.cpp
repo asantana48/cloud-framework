@@ -54,47 +54,16 @@ FileData Redis_Client::Redis_HGETALL(string key)
 	return file;
 }
 
-time_t Redis_Client::stringToTime_t(string stringTime)
-{
-	const char *time_details = stringTime.c_str();
-	struct tm tm;
-	strptime(time_details, "%A %B %d %H:%M:%S %Y", &tm);
-	time_t t = mktime(&tm);
-	return t;
-}
 
-
-// THIS FUNCTION NEEDS TESTING! RETURNS A SEGMENTATION FAULT!!!
 vector<string> Redis_Client::Redis_List_All_Keys()
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	cout << "BREAK\n";
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"KEYS", "*"});
-	cout << "BREAK\n";
 	c.free();	
-	cout << "BREAK\n";
 	rdx.disconnect();
-	cout << "BREAK\n";
 	return c.reply();
 }
-
-
-void Redis_Client::incrementTimesAccessed(string location)
-{
-	Redox rdx;
-	rdx.connect("localhost", 6379);
-	Command<int>& c = rdx.commandSync<int>({"INCR", "Times_Accessed"});
-	if(c.ok()) {
-		cout << "The times accessed value incremented to " << c.reply() << endl;
-	}
-	else {
-		cerr << "Command has error code " << c.status() << endl;
-	}
-	c.free();
-	rdx.disconnect();
-}
-
 
 
 void Redis_Client::setFileName(string key, string fileName)
@@ -121,17 +90,17 @@ string Redis_Client::getFileName(string key)
 }
 
 
-void Redis_Client::setFileSize(string location, string fileSize)
+void Redis_Client::setFileSize(string key, string fileSize)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	Command<int>& c = rdx.commandSync<int>({"HSET", location,"File_Size", fileSize});
+	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Size", fileSize});
 	c.free();
 	rdx.disconnect();
 }
 
 
-string Redis_Client::getFileSize(string key)
+int Redis_Client::getFileSize(string key)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
@@ -141,7 +110,85 @@ string Redis_Client::getFileSize(string key)
 	}
 	c.free();
 	rdx.disconnect();
-	return c.reply();
+	return stoi(c.reply());
+}
+
+
+void Redis_Client::incrementTimesAccessed(string key)
+{
+	int times_accessed = getTimesAccessed(key);
+	times_accessed += 1;
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Times_Accessed", to_string(times_accessed)});
+	c.free();
+	rdx.disconnect();
+}
+
+
+int Redis_Client::getTimesAccessed(string key)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Times_Accessed"});
+	if(!c.ok()) {
+		cout << "Command has error code " << c.reply() << endl;
+	}
+	c.free();
+	rdx.disconnect();
+	return stoi(c.reply());
+}
+
+
+void Redis_Client::setIsLocal(string key, bool isLocal)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Is_Local", to_string(isLocal)});
+	c.free();
+	rdx.disconnect();
+}
+
+
+bool Redis_Client::getIsLocal(string key)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Is_Local"});
+	if(!c.ok()) {
+		cout << "Command has error code " << c.reply() << endl;
+	}
+	int answer = stoi(c.reply());
+	c.free();
+	rdx.disconnect();
+	if (answer == 1){ return true;}
+	else {return false;}
+}
+
+
+void Redis_Client::updateLastTimeModified(string key)
+{
+	time_t currentTime;
+	time(&currentTime); 
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Last_Modified", ctime(&currentTime)});
+	c.free();
+	rdx.disconnect();
+}
+
+time_t Redis_Client::getLastTimeModified(string key)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Last_Modified"});
+	if(!c.ok()) {
+		cout << "Command has error code " << c.reply() << endl;
+	}
+	time_t time = stringToTime_t(c.reply());
+	c.free();
+	rdx.disconnect();
+	return time;
 }
 
 
@@ -160,26 +207,12 @@ string Redis_Client::deleteFile(string key)
 	return reply;
 }
 
-void Redis_Client::updateLastTimeModified(string key)
+
+time_t Redis_Client::stringToTime_t(string stringTime)
 {
-	time_t currentTime;
-	time(&currentTime); 
-	Redox rdx;
-	rdx.connect("localhost", 6379);
-	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Last_Modified", ctime(&currentTime)});
-
-	c.free();
-	rdx.disconnect();
+	const char *time_details = stringTime.c_str();
+	struct tm tm;
+	strptime(time_details, "%A %B %d %H:%M:%S %Y", &tm);
+	time_t t = mktime(&tm);
+	return t;
 }
-
-
-/*
-void Redis_Client::setFileName(string key, string fileName)
-{
-	Redox rdx;
-	rdx.connect("localhost", 6379);
-	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Name", fileName});
-	c.free();
-	rdx.disconnect();
-}
-*/

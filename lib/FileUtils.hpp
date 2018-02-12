@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <string>
+#include <cstring>
 #include <vector>
 
 #include <unistd.h>   // replace with unistd for linux

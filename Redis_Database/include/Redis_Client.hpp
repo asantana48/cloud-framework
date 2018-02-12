@@ -21,18 +21,28 @@ class Redis_Client
 	Redox rdx;
 
 	public:
-	void incrementTimesAccessed(string);
+	
 	void Redis_HMSET(FileData&);
 	FileData Redis_HGETALL(string);
-	vector<string> Redis_List_All_Keys(); // This function is creating a segmentation fault
+	vector<string> Redis_List_All_Keys();
+
 	void setFileName(string, string);
 	string getFileName(string);
+
 	void setFileSize(string, string);
-	string getFileSize(string);
+	int getFileSize(string);
+
+	void incrementTimesAccessed(string);
+	int getTimesAccessed(string);
+
+	void setIsLocal(string, bool);
+	bool getIsLocal(string);
+	
+	void updateLastTimeModified(string);
+	time_t getLastTimeModified(string);
+	
 	string deleteFile(string);
 	time_t stringToTime_t(string);
-	void updateLastTimeModified(string);
-	
 };
 
 
