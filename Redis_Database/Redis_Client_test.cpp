@@ -4,9 +4,7 @@
 #include <ctime>
 #include "stdlib.h"
 
-#include "include/redox.hpp"
 #include "include/Redis_Client.hpp"
-#include "include/FileData.hpp"
 
 
 using namespace std;
@@ -100,12 +98,5 @@ int main(int argc, char* argv[])
 	time_t time = RC.getLastTimeModified("/home/file3");
 
 	cout << "File 3 was last modified at: " << ctime(&time) << endl;
-	
-/*	
-	RC.deleteFile("/home/file3");
-	
-	cout << "File size for file 3 is: " << RC.getFileSize("/home/file3") << endl;
-*/
-	
 	
 }

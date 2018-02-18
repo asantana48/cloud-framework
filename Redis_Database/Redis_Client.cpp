@@ -8,6 +8,7 @@
 #include "include/redox.hpp"
 #include "include/Redis_Client.hpp"
 #include "include/FileData.hpp"
+#include "include/Redis_Scanner.hpp"
 
 using namespace std;
 using redox::Redox;
@@ -22,6 +23,8 @@ void Redis_Client::Redis_HMSET(FileData& file)
 	Command<string>& c = rdx.commandSync<string>({"HMSET", file.location, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
 	if(c.ok()) {
 		cout << c.cmd() <<": " << c.reply() << endl;
+		Redis_Scanner RS;
+		RS.addToFileSizeSet(file);
 	}
 	else {
 		cerr << "Command has error code " << c.status() << endl;
@@ -31,7 +34,7 @@ void Redis_Client::Redis_HMSET(FileData& file)
 }
 
 
-// Change this function to return a struct of FileData
+
 FileData Redis_Client::Redis_HGETALL(string key)
 {
 	Redox rdx;
@@ -173,6 +176,9 @@ void Redis_Client::updateLastTimeModified(string key)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Last_Modified", ctime(&currentTime)});
+	if(!c.ok()) {
+		cout << "Command has error code " << c.reply() << endl;
+	}
 	c.free();
 	rdx.disconnect();
 }

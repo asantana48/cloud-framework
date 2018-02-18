@@ -18,10 +18,9 @@ using redox::Subscriber;
 
 class Redis_Client
 {
-	Redox rdx;
-
-	public:
 	
+	public:
+
 	void Redis_HMSET(FileData&);
 	FileData Redis_HGETALL(string);
 	vector<string> Redis_List_All_Keys();
