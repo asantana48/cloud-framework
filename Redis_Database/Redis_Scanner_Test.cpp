@@ -68,9 +68,6 @@ int main(int argc, char* argv[])
 		cout << fileSizes1[i] << endl;
 	}
 
-	cout << "BREAK!\n";
-
-	
 	vector<string> fileSizes2 = RS.getFilesInSizeRange(300, 700);
 	cout << "Return files with size between 300 and 700 bytes\n";
 	for (int i=0; i<fileSizes2.size(); i++)

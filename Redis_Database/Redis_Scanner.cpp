@@ -55,13 +55,10 @@ vector<string> Redis_Scanner::getFilesInSizeRange(int lowLimit, int highLimit)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	cout << "BREAK!\n";
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", to_string(lowLimit), to_string(highLimit)});
 	vector<string> temp(c.reply());
 	c.free();
-	cout << "BREAK!\n";
 	rdx.disconnect();
-	cout << "BREAK!\n";
 	return temp;
 }
 
