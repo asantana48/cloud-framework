@@ -53,7 +53,6 @@ int main(int argc, char* argv[])
 	
 	
 	FileData metaData = RC.Redis_HGETALL("/home/file1");
-
 	cout << "File location: " << metaData.location << endl;
 	cout << "File name: " << metaData.fileName << endl;
 	cout << "File size: " << metaData.fileSize << endl;
@@ -77,7 +76,7 @@ int main(int argc, char* argv[])
 
 	cout << "Name for file 3 is: " << RC.getFileName("/home/file3") << endl;
 
-	RC.setFileSize("/home/file3", "1000");
+	RC.setFileSize("/home/file3", 1000);
 
 	cout << "File size for file 3 is: " << RC.getFileSize("/home/file3") << endl;
 

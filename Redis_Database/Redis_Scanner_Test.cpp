@@ -8,9 +8,9 @@
 #include "include/Redis_Client.hpp"
 
 using namespace std;
-using redox::Redox;
-using redox::Command;
-using redox::Subscriber;
+//using redox::Redox;
+//using redox::Command;
+//using redox::Subscriber;
 
 int main(int argc, char* argv[])
 {
@@ -61,25 +61,32 @@ int main(int argc, char* argv[])
 
 	
 
-	vector<string> fileSizes1 = RS.getFilesInSizeRange(0, 10000);
+	vector<FileData> fileSizes1 = RS.getFilesInSizeRange(0, 10000);
 	cout << "Return files with size between 0 and 10000 bytes\n";
 	for (int i=0; i<fileSizes1.size(); i++)
 	{
-		cout << fileSizes1[i] << endl;
+		cout << fileSizes1[i].fileName << endl;
 	}
 
-	vector<string> fileSizes2 = RS.getFilesInSizeRange(300, 700);
+	vector<FileData> fileSizes2 = RS.getFilesInSizeRange(300, 700);
 	cout << "Return files with size between 300 and 700 bytes\n";
 	for (int i=0; i<fileSizes2.size(); i++)
 	{
-		cout << fileSizes2[i] << endl;
+		cout << fileSizes2[i].fileName << endl;
 	}
 
-	vector<string> fileSizes3 = RS.getFilesInSizeRange(260, 1024);
+	vector<FileData> fileSizes3 = RS.getFilesInSizeRange(260, 1024);
 	cout << "Return files with size between 260 and 1024 bytes\n";
 	for (int i=0; i<fileSizes3.size(); i++)
 	{
-		cout << fileSizes3[i] << endl;
+		cout << fileSizes3[i].fileName << endl;
+	}
+
+	vector<FileData> fileSizes4 = RS.getFilesInSizeRange(1000, 0);
+	cout << "Return files with size between 1000 and 0 bytes\n";
+	for (int i=0; i<fileSizes4.size(); i++)
+	{
+		cout << fileSizes4[i].fileName << endl;
 	}
 
 

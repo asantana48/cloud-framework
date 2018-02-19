@@ -6,7 +6,6 @@
 
 #include "include/redox.hpp"
 #include "include/Redis_Client.hpp"
-#include "include/FileData.hpp"
 #include "include/Redis_Scanner.hpp"
 
 
@@ -28,11 +27,11 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 	Command<int>& c = rdx.commandSync<int>({"ZADD", "File_Size", to_string(file.fileSize), file.location});
 	if(c.reply() == 1)
 	{
-		cout << file.fileName << " successfully added to set!\n";
+		cout << file.fileName << " successfully added to file size set!\n";
 	}
 	else
 	{
-		cout << "Error while adding file to set!\n";
+		cout << "Error while adding file to file size set!\n";
 	}
 	c.free();
 	rdx.disconnect();
@@ -51,14 +50,45 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 * @return vector<string> c
 *	Contains all of the file locations of files that fit the file size policy
 */
-vector<string> Redis_Scanner::getFilesInSizeRange(int lowLimit, int highLimit)
+vector<FileData> Redis_Scanner::getFilesInSizeRange(int lowLimit, int highLimit)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", to_string(lowLimit), to_string(highLimit)});
 	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
 	c.free();
 	rdx.disconnect();
-	return temp;
+	return files;
 }
 
+
+void Redis_Scanner::addToLastModifiedSet(FileData& file)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "Last_Modified", to_string(file.lastModified), file.location});
+	if(c.reply() == 1)
+	{
+		cout << file.fileName << " successfully added to last modified set!\n";
+	}
+	else
+	{
+		cout << "Error while adding file to last modified set!\n";
+	}
+	c.free();
+	rdx.disconnect();
+}
+
+/**
+vector<FileData> getFilesInWithinLastModifiedTime()
+{
+
+}
+*/

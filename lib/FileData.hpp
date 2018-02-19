@@ -8,10 +8,10 @@
 struct FileData
 {
     std::string location;
-	int fileSize;
+    std::string fileName;
+    int fileSize;
     int timesAccessed; // TODO add accessors
-	time_t lastModified;
-
+    time_t lastModified;
     bool isLocal;
 
     void setFileSize(std::string s) {

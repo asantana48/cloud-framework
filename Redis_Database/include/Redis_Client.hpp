@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "redox.hpp"
-#include "FileData.hpp"
+#include "../../lib/FileData.hpp"
 
 
 using namespace std;
@@ -23,12 +23,13 @@ class Redis_Client
 
 	void Redis_HMSET(FileData&);
 	FileData Redis_HGETALL(string);
+
 	vector<string> Redis_List_All_Keys();
 
 	void setFileName(string, string);
 	string getFileName(string);
 
-	void setFileSize(string, string);
+	void setFileSize(string, int);
 	int getFileSize(string);
 
 	void incrementTimesAccessed(string);

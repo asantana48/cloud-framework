@@ -8,15 +8,18 @@
 #include <ctime>
 #include "stdlib.h"
 
-#include "redox.hpp"
+//#include "redox.hpp"
 #include "Redis_Client.hpp"
-#include "FileData.hpp"
+#include "../../lib/FileData.hpp"
+#include "../../lib/SizePolicy.hpp"
+#include "../../lib/TimePolicy.hpp"
+//#include "../../lib/HitPolicy.hpp"
 
 
 using namespace std;
-using redox::Redox;
-using redox::Command;
-using redox::Subscriber;
+//using redox::Redox;
+//using redox::Command;
+//using redox::Subscriber;
 
 
 class Redis_Scanner
@@ -24,7 +27,10 @@ class Redis_Scanner
 
 public:
 	void addToFileSizeSet(FileData&);
-	vector<string> getFilesInSizeRange(int, int);
+	vector<FileData> getFilesInSizeRange(int, int);
+
+	void addToLastModifiedSet(FileData& file);
+	//vector<FileData> getFilesInWithinLastModifiedTime(time_t);
 };
 
 #endif

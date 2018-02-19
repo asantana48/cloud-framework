@@ -7,7 +7,6 @@
 
 #include "include/redox.hpp"
 #include "include/Redis_Client.hpp"
-#include "include/FileData.hpp"
 #include "include/Redis_Scanner.hpp"
 
 using namespace std;
@@ -93,11 +92,11 @@ string Redis_Client::getFileName(string key)
 }
 
 
-void Redis_Client::setFileSize(string key, string fileSize)
+void Redis_Client::setFileSize(string key, int fileSize)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Size", fileSize});
+	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Size", to_string(fileSize)});
 	c.free();
 	rdx.disconnect();
 }
