@@ -4,84 +4,47 @@
 #include "lib/AWSConnector.hpp"
 
 
+using namespace std;
 
 int main(int argc, char* argv[])
 {
-	if (argc < 2)
-		return -1;
-
 	std::string region = "us-east-2";
 	std::string bucket = "devon-bucket";
-
-	std::string command;
 	
-	std::string sourceFile;
-	std::string destFile;
-	
-	command = argv[1];
-
 	AWSConnector aws;
 	aws.connect(region);
 
+	cout << "BUCKETS\n";
+	for (auto const &b: aws.listBuckets()) {
+		cout << b << endl;
+	}
+	cout << endl;
 
-	// 3 argument commands
-	if (argc < 3)
-		return -1;
+	cout << "OBJECTS in devon-bucket\n";
+	for (auto const &b: aws.listBucketContents("devon-bucket"))
+		cout << b.fileName << " (" << b.location << ")" << endl;
+	cout << endl;
 
-	bucket = argv[2];
-
-	//migrateFilesSizeOnly
-	//bucket = database in this case
-	//if (command.compare("migrateFilesSizeOnly") == 0)
-	//{
-	//	migrateFilesSizeOnly(bucket);
-	//}
+	cout << "ALL OBJECTS\n";
+	for (auto const &b: aws.listAllObjects())
+		cout << b.fileName << " (" << b.location << ")" << endl;
+	cout << endl;
 	
-	if (command.compare("list") == 0)
+	for (int i = 0; i < argc; ++i) 
 	{
-		if (bucket.compare("all") == 0)
-			aws.listBuckets();
-		else {
-			aws.listObjects(bucket);
+		if (0 == strcmp(argv[i], "delete"))	{
+			cout << "Deleting object\n";
+			aws.deleteObject("devon-bucket", "AWSTester.cpp");
+		}
+		else if (0 == strcmp(argv[i], "promote")) {
+			cout << "Promoting object\n";
+			aws.promoteObject("devon-bucket", "small_old", "testbed/small_old");
+		}
+		else if (0 == strcmp(argv[i], "demote")) {
+			cout << "Demoting object\n";
+			aws.demoteObject("devon-bucket", "testbed/small_old", "small_old");
 		}
 	}
 
-	// 4 argument commands
-	if (argc < 4)
-		return -1;
-	
-	aws.setBucket(bucket);
-
-	sourceFile = argv[3];
-
-	// 5 argument commands
-	if (argc < 5)
-		destFile = sourceFile;
-	else
-		destFile = argv[4];
-
-	if (command.compare("download") == 0)
-	{
-		aws.getObject(sourceFile, destFile);
-	}
-	else if (command.compare("upload") == 0)
-	{
-		aws.putObject(sourceFile, destFile);
-	}
-
-	//set policy
-	/*if (command.compare("setPolicy") == 0)
-	{
-		if (bucket.compare("sizeOnly") == 0)
-		{
-			long double x = stold(sourceFile);
-
-			setFileSizeThresholdInBytes(x);
-		}
-	}
-	
-	
-
-	*/
 	return 0;
 }

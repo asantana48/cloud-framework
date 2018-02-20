@@ -10,35 +10,46 @@
 #include <aws/s3/model/ListObjectsRequest.h>
 #include <aws/s3/model/GetObjectRequest.h>
 #include <aws/s3/model/PutObjectRequest.h>
+#include <aws/s3/model/DeleteObjectRequest.h>
 
-#include <iostream>
+#include "FileData.hpp"
+
 #include <fstream>
 #include <string>
-#include <memory>
+#include <cstdio>
 
 class AWSConnector {
 private:
-	std::unique_ptr<Aws::S3::S3Client> client;
+	Aws::S3::S3Client* client;
 	Aws::Client::ClientConfiguration clientConfig;
-	Aws::SDKOptions options; // leave default for now
-	Aws::String currentBucket;
+	Aws::SDKOptions options;  // leave default 
 
 public:
     AWSConnector();
     ~AWSConnector();
 
-    void connect(std::string region);
-    void setBucket(std::string bucket);
+    bool connect(std::string region);
 
-    void getObject(std::string source, std::string destination);
-    void putObject(std::string source, std::string destination);
+	// Operations on buckets
+    bool createBucket(std::string bucket); // tbi
+	bool deleteBucket(std::string name);   // tbi
 
-	void listBuckets();
+	// Operations on file objects
+    bool getObject(std::string bucket, std::string remote, std::string local);
+    bool putObject(std::string bucket, std::string local, std::string remote);
+	bool deleteObject(std::string bucket, std::string object);
 
-	//List objects (keys) within an Amazon S3 bucket.
-	//Parameters: list_objects(bucketName, regionName)
-	void listObjects();
-	void listObjects(std::string bucket);
+	// Full migration methods
+	bool promoteObject(std::string bucket, std::string remote, std::string local);
+	bool promoteObject(std::string bucket, std::string object);
+	
+	bool demoteObject(std::string bucket, std::string local, std::string remote);
+	bool demoteObject(std::string bucket, std::string object);
+	
+	// Information retrieval functions
+	std::list<std::string> listBuckets();
+	std::list<FileData> listBucketContents(std::string bucket);
+	std::list<FileData> listAllObjects();
 };
 #endif
 

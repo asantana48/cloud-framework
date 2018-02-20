@@ -1,34 +1,137 @@
 #include "lib/AWSConnector.hpp"
 
-AWSConnector::AWSConnector() {
-	Aws::InitAPI(options);
-}
-
-AWSConnector::~AWSConnector() {
-	Aws::ShutdownAPI(options);
-}
-
-void AWSConnector::connect(std::string region) {
-    clientConfig.region = region.c_str();
-	if (client)
-		client.reset();
-	client = std::make_unique<Aws::S3::S3Client>(clientConfig);
-}
-
-void AWSConnector::listBuckets()
+AWSConnector::AWSConnector() 
 {
+    client = NULL;
+    Aws::InitAPI(options);
+}
+
+AWSConnector::~AWSConnector() 
+{
+    Aws::ShutdownAPI(options);
+}
+
+bool AWSConnector::connect(std::string region) 
+{
+    clientConfig.region = region.c_str();
+    if (client)
+        delete client;
+    client = new Aws::S3::S3Client(clientConfig);
+    
+    return true;
+}
+
+bool AWSConnector::createBucket(std::string bucket)
+{
+    return false;
+}
+
+bool AWSConnector::deleteBucket(std::string bucket) 
+{
+    return false;
+}
+
+bool AWSConnector::getObject(std::string bucket, std::string source, std::string destination)
+{
+    Aws::S3::Model::GetObjectRequest req;
+    req.WithBucket(bucket.c_str()).WithKey(source.c_str());
+
+    auto outcome = client->GetObject(req);
+
+    if (outcome.IsSuccess())
+    {
+        Aws::OFStream local_file;
+        local_file.open(destination.c_str(), std::ios::out | std::ios::binary);
+        local_file << outcome.GetResult().GetBody().rdbuf();
+        return true;
+    }
+    else
+    {
+        std::cout << "GetObject error: " <<
+            outcome.GetError().GetExceptionName() << " " <<
+            outcome.GetError().GetMessage() << std::endl;
+        return false;
+    }
+}
+
+bool AWSConnector::putObject(std::string bucket, std::string source, std::string destination)
+{
+    Aws::S3::Model::PutObjectRequest req;
+    req.WithBucket(bucket.c_str()).WithKey(destination.c_str());
+
+    auto fileData = Aws::MakeShared<Aws::FStream>("PutObjectInputStream",
+        source.c_str(), std::ios_base::in | std::ios_base::binary);
+
+    req.SetBody(fileData);
+
+    auto outcome = client->PutObject(req);
+
+    if (outcome.IsSuccess())
+    {
+        return true;
+    }
+    else
+    {
+        std::cout << "PutObject error: " <<
+            outcome.GetError().GetExceptionName() << " " <<
+            outcome.GetError().GetMessage() << std::endl;
+        return false;
+    }
+}
+
+bool AWSConnector::deleteObject(std::string bucket, std::string object)  
+{ 
+    Aws::S3::Model::DeleteObjectRequest req;
+    req.WithBucket(bucket.c_str()).WithKey(object.c_str());
+
+    auto outcome = client->DeleteObject(req);
+
+    if (outcome.IsSuccess()) 
+    {
+        return true;
+    }
+    else
+    {
+        std::cout << "DeleteObject error: " <<
+            outcome.GetError().GetExceptionName() << " " <<
+            outcome.GetError().GetMessage() << std::endl;
+        return false;
+    }
+}
+
+bool AWSConnector::promoteObject(std::string bucket, std::string remote, std::string local) 
+{
+    return getObject(bucket, remote, local) && deleteObject(bucket, remote);
+}
+
+bool AWSConnector::promoteObject(std::string bucket, std::string object) 
+{
+    return promoteObject(bucket, object, object);
+}
+
+bool AWSConnector::demoteObject(std::string bucket, std::string local, std::string remote)
+{
+    return putObject(bucket, local, remote) && std::remove(local.c_str());
+}
+
+bool AWSConnector::demoteObject(std::string bucket, std::string object)
+{
+    return demoteObject(bucket, object, object);
+}
+
+std::list<std::string> AWSConnector::listBuckets()
+{
+    std::list<std::string> contents;
     auto outcome = client->ListBuckets();
 
     if (outcome.IsSuccess())
     {
-        std::cout << "Your Amazon S3 buckets:" << std::endl;
-
         Aws::Vector<Aws::S3::Model::Bucket> bucket_list =
             outcome.GetResult().GetBuckets();
 
         for (auto const &bucket : bucket_list)
         {
-            std::cout << "  * " << bucket.GetName() << std::endl;
+            contents.push_back(bucket.GetName().c_str());
         }
     }
     else
@@ -37,22 +140,17 @@ void AWSConnector::listBuckets()
             << outcome.GetError().GetExceptionName() << " - "
             << outcome.GetError().GetMessage() << std::endl;
     }
+    return contents;
 }
 
-void AWSConnector::setBucket(std::string bucket)
-{
-    currentBucket = bucket.c_str();
-}
 
-void AWSConnector::listObjects()
-{
-    if (currentBucket.empty())
-        return;
 
-    std::cout << "Objects in S3 bucket: " << currentBucket << std::endl;
+std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
+{
+    std::list<FileData> contents;
 
     Aws::S3::Model::ListObjectsRequest objects_request;
-    objects_request.WithBucket(currentBucket);
+    objects_request.WithBucket(bucket.c_str());
 
     auto list_objects_outcome = client->ListObjects(objects_request);
 
@@ -60,10 +158,15 @@ void AWSConnector::listObjects()
     {
         Aws::Vector<Aws::S3::Model::Object> object_list =
             list_objects_outcome.GetResult().GetContents();
-
-        for (auto const &s3_object : object_list)
+        
+        for (auto const &object : object_list)
         {
-            std::cout << "* " << s3_object.GetKey() << std::endl;
+            FileData fd;
+            fd.fileName = object.GetKey().c_str();
+            fd.fileSize = object.GetSize();
+            //fd.lastModified = object.GetLastModified().Millis();
+            fd.location = bucket;
+            contents.push_back(fd);
         }
     }
     else
@@ -72,64 +175,15 @@ void AWSConnector::listObjects()
             list_objects_outcome.GetError().GetExceptionName() << " " <<
             list_objects_outcome.GetError().GetMessage() << std::endl;
     }
+    return contents;
 }
 
-void AWSConnector::listObjects(std::string bucket) {
-	setBucket(bucket);
-	listObjects();
-}
+std::list<FileData> AWSConnector::listAllObjects() {
+    std::list<FileData> contents;
 
-void AWSConnector::getObject(std::string source, std::string destination)
-{
-
-    std::cout << "Downloading " << source << " from S3 bucket: " <<
-        currentBucket << " as " << destination << std::endl;
-
-    Aws::S3::Model::GetObjectRequest object_request;
-    object_request.WithBucket(currentBucket).WithKey(source.c_str());
-
-    auto get_object_outcome = client->GetObject(object_request);
-
-    if (get_object_outcome.IsSuccess())
-    {
-        Aws::OFStream local_file;
-        local_file.open(destination.c_str(), std::ios::out | std::ios::binary);
-        local_file << get_object_outcome.GetResult().GetBody().rdbuf();
-        std::cout << "Done!" << std::endl;
+    for (auto bucket: listBuckets()) {
+        contents.splice(contents.end(), listBucketContents(bucket));
     }
-    else
-    {
-        std::cout << "GetObject error: " <<
-            get_object_outcome.GetError().GetExceptionName() << " " <<
-            get_object_outcome.GetError().GetMessage() << std::endl;
-    }
-}
 
-
-
-void AWSConnector::putObject(std::string source, std::string destination)
-{
-    std::cout << "Uploading " << source << " to S3 bucket " <<
-        currentBucket << " as " << destination << std::endl;
-
-    Aws::S3::Model::PutObjectRequest object_request;
-    object_request.WithBucket(currentBucket).WithKey(destination.c_str());
-
-    auto input_data = Aws::MakeShared<Aws::FStream>("PutObjectInputStream",
-        source.c_str(), std::ios_base::in | std::ios_base::binary);
-
-    object_request.SetBody(input_data);
-
-    auto put_object_outcome = client->PutObject(object_request);
-
-    if (put_object_outcome.IsSuccess())
-    {
-        std::cout << "Done!" << std::endl;
-    }
-    else
-    {
-        std::cout << "PutObject error: " <<
-            put_object_outcome.GetError().GetExceptionName() << " " <<
-            put_object_outcome.GetError().GetMessage() << std::endl;
-    }
+    return contents;
 }
