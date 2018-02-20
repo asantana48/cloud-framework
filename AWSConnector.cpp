@@ -143,21 +143,19 @@ std::list<std::string> AWSConnector::listBuckets()
     return contents;
 }
 
-
-
 std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
 {
     std::list<FileData> contents;
+    
+    Aws::S3::Model::ListObjectsRequest req;
+    req.WithBucket(bucket.c_str());
 
-    Aws::S3::Model::ListObjectsRequest objects_request;
-    objects_request.WithBucket(bucket.c_str());
+    auto outcome = client->ListObjects(req);
 
-    auto list_objects_outcome = client->ListObjects(objects_request);
-
-    if (list_objects_outcome.IsSuccess())
+    if (outcome.IsSuccess())
     {
         Aws::Vector<Aws::S3::Model::Object> object_list =
-            list_objects_outcome.GetResult().GetContents();
+            outcome.GetResult().GetContents();
         
         for (auto const &object : object_list)
         {
@@ -172,8 +170,8 @@ std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
     else
     {
         std::cout << "ListObjects error: " <<
-            list_objects_outcome.GetError().GetExceptionName() << " " <<
-            list_objects_outcome.GetError().GetMessage() << std::endl;
+            outcome.GetError().GetExceptionName() << " " <<
+            outcome.GetError().GetMessage() << std::endl;
     }
     return contents;
 }
@@ -181,9 +179,8 @@ std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
 std::list<FileData> AWSConnector::listAllObjects() {
     std::list<FileData> contents;
 
-    for (auto bucket: listBuckets()) {
+    for (auto bucket: listBuckets()) 
         contents.splice(contents.end(), listBucketContents(bucket));
-    }
 
     return contents;
 }
