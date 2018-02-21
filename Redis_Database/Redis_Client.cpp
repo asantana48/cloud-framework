@@ -21,7 +21,7 @@ void Redis_Client::Redis_HMSET(FileData& file)
 	rdx.connect("localhost", 6379);
 	Command<string>& c = rdx.commandSync<string>({"HMSET", file.location, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
 	if(c.ok()) {
-		cout << c.cmd() <<": " << c.reply() << endl;
+		printf("File added to database!\n");
 		Redis_Scanner RS;
 		RS.addToFileSizeSet(file);
 	}

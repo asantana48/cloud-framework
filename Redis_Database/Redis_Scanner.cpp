@@ -50,8 +50,10 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 * @return vector<string> c
 *	Contains all of the file locations of files that fit the file size policy
 */
-vector<FileData> Redis_Scanner::getFilesInSizeRange(int lowLimit, int highLimit)
+vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
 {
+	int lowLimit = policy.getLowThreshold();
+	int highLimit = policy.getHighThreshold();
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", to_string(lowLimit), to_string(highLimit)});
@@ -66,6 +68,33 @@ vector<FileData> Redis_Scanner::getFilesInSizeRange(int lowLimit, int highLimit)
 	rdx.disconnect();
 	return files;
 }
+
+/*
+vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<vector<string>>& c;
+	if(policy.greaterThan == true)
+	{
+		c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", to_string(policy.getLowThreshold), "+inf"});
+	}
+	else if(policy.greaterThan == false)
+	{
+		c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", "-inf", to_string(policy.getHighThreshold)});
+	}
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+	c.free();
+	rdx.disconnect();
+	return files;
+}
+*/
 
 
 void Redis_Scanner::addToLastModifiedSet(FileData& file)

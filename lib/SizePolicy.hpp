@@ -6,18 +6,19 @@
 
 class SizePolicy : public Policy {
 private:
-	int threshold;
-    	bool greaterThan;
+	int lowThreshold;
+	int highThreshold;
 
 public:
 	//If migrateGreater == true, file will be migrated if greater than threshold. Otherwise, if smaller than threshold.
-	SizePolicy(int newThreshold, bool migrateGreater)
-	{
-		threshold = newThreshold;
-        	greaterThan = migrateGreater;
-	}
+	SizePolicy(int lowThreshold, int highThreshold) :
+		lowThreshold(lowThreshold), highThreshold(highThreshold) {}
 
+	int getHighThreshold(){ return highThreshold;}
 
+	int getLowThreshold(){ return lowThreshold;}
+
+	/*
 	bool isFileKept(FileData dataObject) 
 	{
 		if (greaterThan)
@@ -25,5 +26,6 @@ public:
 		else
 			return dataObject.fileSize >= threshold;
 	}
+	*/
 };
 #endif

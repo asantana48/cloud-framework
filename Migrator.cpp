@@ -2,6 +2,7 @@
 #include "lib/PolicyManager.hpp"
 #include "lib/FileData.hpp"
 #include "lib/FileUtils.hpp"
+#include "Redis_Database/include/Redis_Client.hpp"
 
 //#include <libxml/xmlreader.h>
 #include <sys/types.h>
@@ -25,6 +26,7 @@ int main(int argc, char* argv[]) {
     // Get file list and metadata
     list<string> filenames = FileUtils::List(FILES_PATH.c_str());
     list<FileData> files;
+    Redis_Client RC;
     struct stat statObj;
     for (string name: filenames) {
         string full_path = FILES_PATH + name;
@@ -37,6 +39,7 @@ int main(int argc, char* argv[]) {
         fd.fileSize = statObj.st_size;
         fd.lastModified = statObj.st_atime;
         files.push_back(fd);
+        RC.Redis_HMSET(fd);
     }
 
     /*AWSConnector aws;

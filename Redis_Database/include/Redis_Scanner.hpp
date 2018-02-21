@@ -27,7 +27,8 @@ class Redis_Scanner
 
 public:
 	void addToFileSizeSet(FileData&);
-	vector<FileData> getFilesInSizeRange(int, int);
+	vector<FileData> getFilesInSizeRange(SizePolicy);
+	//vector<FileData> getFilesInSizeRange(SizePolicy policy);
 
 	void addToLastModifiedSet(FileData& file);
 	//vector<FileData> getFilesInWithinLastModifiedTime(time_t);
