@@ -100,7 +100,7 @@ void Redis_Scanner::addToLastModifiedSet(FileData& file)
 * @return vector<string> files
 *	Contains all of the file locations of files that fit the time policy
 */
-vector<FileData> Redis_Scanner::getFilesWithinLastModifiedTime(TimePolicy policy)
+vector<FileData> Redis_Scanner::getFilesInLastModifiedTime(TimePolicy policy)
 {
 	long int timeThreshold = static_cast<long int>(time(NULL)) - policy.getMinimumAge();
 
@@ -119,3 +119,44 @@ vector<FileData> Redis_Scanner::getFilesWithinLastModifiedTime(TimePolicy policy
 	return files;
 }
 
+/* Add file name and total times accessed to a sorted set
+*
+* @param FileData& file
+*	FileData object containing all values related to a file 
+*/
+void Redis_Scanner::addToHitList(FileData& file)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "Times_Accessed", to_string(file.timesAccessed), file.location});
+	if(c.reply() == 1)
+	{
+		cout << file.fileName << " successfully added to times accessed set!\n";
+	}
+	else
+	{
+		cout << "Error while adding file to times accessed set!\n";
+	}
+	c.free();
+	rdx.disconnect();
+}
+
+vector<FileData> Redis_Scanner::getFilesInTimesAccessedRange(HitPolicy policy)
+{
+	int hitsThreshold = policy.getHits();
+
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Times_Accessed", "-inf", to_string(hitsThreshold)});
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+	c.free();
+	rdx.disconnect();
+	return files;
+}

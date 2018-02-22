@@ -13,7 +13,7 @@
 #include "../../lib/FileData.hpp"
 #include "../../lib/SizePolicy.hpp"
 #include "../../lib/TimePolicy.hpp"
-//#include "../../lib/HitPolicy.hpp"
+#include "../../lib/HitPolicy.hpp"
 
 
 using namespace std;
@@ -29,10 +29,11 @@ public:
 	void addToFileSizeSet(FileData&);
 	vector<FileData> getFilesInSizeRange(SizePolicy);
 	
-	void addToLastModifiedSet(FileData& file);
-	vector<FileData> getFilesWithinLastModifiedTime(TimePolicy);
+	void addToLastModifiedSet(FileData&);
+	vector<FileData> getFilesInLastModifiedTime(TimePolicy);
 
-	//void addToHitList(FileData&);
+	void addToHitList(FileData&);
+	vector<FileData> getFilesInTimesAccessedRange(HitPolicy);
 };
 
 #endif

@@ -9,10 +9,12 @@ private:
     int hits;
 
 public:
-    HitPolicy::HitPolicy(int numHits)
+    HitPolicy(int numHits)
     {
         hits = numHits;
     }
+
+    int getHits() { return hits; }
 
     bool isFileKept(FileData dataObject)
     {

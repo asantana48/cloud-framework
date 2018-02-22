@@ -90,13 +90,21 @@ int main(int argc, char* argv[])
 		cout << fileSizes4[i].fileName << endl;
 	}
 	*/
-	
+
 	TimePolicy TP(0, 0, 10, 0, 0, 0);
-	vector<FileData> temp1 = RS.getFilesWithinLastModifiedTime(TP);
+	vector<FileData> temp1 = RS.getFilesInLastModifiedTime(TP);
 	cout << "Return files older than 10 days\n";
 	for (int i=0; i<temp1.size(); i++)
 	{
 		cout << temp1[i].fileName << endl;
+	}
+
+	HitPolicy HP(800);
+	vector<FileData> temp2 = RS.getFilesInTimesAccessedRange(HP);
+	cout << "Return files with less than 800 hits\n";
+	for (int i=0; i<temp2.size(); i++)
+	{
+		cout << temp2[i].fileName << endl;
 	}
 
 }

@@ -4,6 +4,7 @@
 #include "Policy.hpp"
 #include "SizePolicy.hpp"
 #include "TimePolicy.hpp"
+#include "HitPolicy.hpp"
 #include "FileData.hpp"
 
 #include <list>
