@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
     // Create necessary classes
     PolicyManager pm;
-
+    
     // Spawn daemon
     daemonize();
 
@@ -73,14 +73,23 @@ void updatePolicies(PolicyManager& pm, int time) {
 }
 
 void manageFiles(PolicyManager& pm, int time) {
-    
+    AWSConnector aws;
+    std::string region = "us-east-2";
+	std::string bucket = "devon-bucket";
+    aws.connect(region);
     while (true) {
         if (ready) {
             syslog(LOG_NOTICE, "Querying database for demotion candidates");
             vector<FileData> demotionList = getDemotionList(pm);
             for (FileData fd: demotionList) {
-                syslog(LOG_NOTICE, fd.fileName.c_str());
-            }  
+                char buf[80];
+                sprintf(buf, "Found %s", fd.getName());
+                syslog(LOG_NOTICE, buf);
+                if (fd.isLocal) {
+                    aws.demoteObject(bucket, fd.location, fd.getName());
+                }
+            } 
+
             sleep(time);
         }
     }
@@ -149,6 +158,8 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     vector<FileData> inTimeRange;
     vector<FileData> inHitsRange;
 
+    
+
     // TODO append instead of set
     for (auto p : pm.getPolicyList())  {
         // Grab and sort all files within file size policy range
@@ -158,15 +169,16 @@ vector<FileData> getDemotionList(PolicyManager& pm)
         }
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
-            TimePolicy* tp = (TimePolicy*) tp;
+            TimePolicy* tp = (TimePolicy*) p;
             inTimeRange = RS.getFilesInLastModifiedTime(*tp);
         }
         // Grab and sort all files within times accessed range
-        else if (p->type.compare("hitpolicy") == 0) {
-            HitPolicy* hp = (HitPolicy*) hp;
+        else if (p->type.compare("hitspolicy") == 0) {
+            HitPolicy* hp = (HitPolicy*) p;
             inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
         }
     } 
+   
     sortVector(inSizeRange);
     sortVector(inTimeRange);
     sortVector(inHitsRange);

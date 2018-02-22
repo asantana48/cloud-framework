@@ -4,4 +4,4 @@ initialize : Initializer.cpp
 	g++ -o initialize Initializer.cpp PolicyManager.cpp Redis_Database/Redis_Client.cpp Redis_Database/Redis_Scanner.cpp $(CXXFLAGS)
 
 supervise : Supervisor.cpp
-	g++ -o supervise Supervisor.cpp PolicyManager.cpp Redis_Database/Redis_Client.cpp Redis_Database/Redis_Scanner.cpp $(CXXFLAGS)
+	g++ -o supervise Supervisor.cpp PolicyManager.cpp AWSConnector.cpp Redis_Database/Redis_Client.cpp Redis_Database/Redis_Scanner.cpp $(CXXFLAGS)
