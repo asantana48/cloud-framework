@@ -4,6 +4,7 @@
 #include "lib/FileData.hpp"
 #include "lib/FileUtils.hpp"
 #include "Redis_Database/include/Redis_Client.hpp"
+#include "Redis_Database/include/Redis_Scanner.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +27,7 @@ void updatePolicies(PolicyManager& pm, int time);
 
 bool orderFiles(FileData&, FileData&);
 void sortVector(vector<FileData>&);
+vector<FileData> getDemotionList(PolicyManager& pm);
 
 int main(int argc, char** argv)
 {
@@ -62,21 +64,25 @@ void updatePolicies(PolicyManager& pm, int time) {
         syslog(LOG_NOTICE, resp.c_str());
         ready = true; 
         sleep(time);
-               
     }
+    /*
+    for (auto p : pm.getPolicyList()) {
+                syslog(LOG_NOTICE, p->type.c_str());
+            }
+    */
 }
 
 void manageFiles(PolicyManager& pm, int time) {
     
     while (true) {
         if (ready) {
-            //vector<FileData> demotionList = getDemotionList(&pm)
-            syslog(LOG_NOTICE, "ready! :)");
-            /*for (auto p : pm.getPolicyList()) {
-                syslog(LOG_NOTICE, p->type.c_str());
-            }*/
+            syslog(LOG_NOTICE, "Querying database for demotion candidates");
+            vector<FileData> demotionList = getDemotionList(pm);
+            for (FileData fd: demotionList) {
+                syslog(LOG_NOTICE, fd.fileName.c_str());
+            }  
+            sleep(time);
         }
-        sleep(time);
     }
 }
 
@@ -131,29 +137,43 @@ void daemonize()
 }
 
 
-/*
-vector<FileData> getDemotionList(PolicyList)
+
+vector<FileData> getDemotionList(PolicyManager& pm)
 {
     Redis_Scanner RS;
     vector<FileData> demotionList;
     vector<FileData> temp1;
     vector<FileData> temp2;
 
-     // Grab and sort all files within file size policy range
-    vector<FileData> inSizeRange = RS.getFilesInSizeRange(Size Policy);
-    sortVector(inSizeRane);
+    vector<FileData> inSizeRange;
+    vector<FileData> inTimeRange;
+    vector<FileData> inHitsRange;
 
-     // Grab and sort all files within last modified time range
-    vector<FileData> inTimeRange = RS.getFilesInLastModifiedTime(TimePolicy);
+    // TODO append instead of set
+    for (auto p : pm.getPolicyList())  {
+        // Grab and sort all files within file size policy range
+        if (p->type.compare("sizepolicy") == 0) {
+            SizePolicy* sp = (SizePolicy*) p;
+            inSizeRange = RS.getFilesInSizeRange(*sp);
+        }
+        // Grab and sort all files within last modified time range
+        else if (p->type.compare("timepolicy") == 0) {
+            TimePolicy* tp = (TimePolicy*) tp;
+            inTimeRange = RS.getFilesInLastModifiedTime(*tp);
+        }
+        // Grab and sort all files within times accessed range
+        else if (p->type.compare("hitpolicy") == 0) {
+            HitPolicy* hp = (HitPolicy*) hp;
+            inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
+        }
+    } 
+    sortVector(inSizeRange);
     sortVector(inTimeRange);
-
-     // Grab and sort all files within times accessed range
-    vector<FileData> inHitsRange = RS.getFilesInTimesAccessedRange(HitPolicy);
     sortVector(inHitsRange);
 
-     // Grab and sort all files that are local
+    // Grab and sort all files that are local
     vector<FileData> isLocal = RS.getLocalFiles();
-    sortVector(isLocal);
+    sortVector(isLocal); 
 
     set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp1), orderFiles);
     sortVector(temp1);
@@ -162,17 +182,12 @@ vector<FileData> getDemotionList(PolicyList)
     sortVector(temp2);
     
     set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(demotionList), orderFiles);
-    sortVector(demotionList);    
-    
-    cout << "Files to demote:\n";
-    for (int i=0; i<demotionList.size(); i++)
-    {
-        cout << demotionList[i].fileName << endl;
-    }
-     return demotionList;
+    sortVector(demotionList); 
+
+    return demotionList;
 }
 
-
+/*
 vector<FileData> getPromotionList(PolicyList)
 {
     Redis_Scanner RS;

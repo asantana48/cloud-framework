@@ -3,21 +3,8 @@
 	<policy type="sizepolicy">
 		<name>size</name>
 		<lowerbound>52</lowerbound>
-		<upperbound>135</upperbound>
+		<upperbound>5541000</upperbound>
 	</policy>
-
-	<policy type="sizepolicy">
-
-		<lowerbound>50</lowerbound>
-		<upperbound>123</upperbound>
-		<name>sizePol2</name>
-	</policy>
-
-	<policy type="hitspolicy">
-		<name>MyHitsPolicy</name>
-		<minimumhits>24</minimumhits>
-	</policy>
-
 	<policy type="timepolicy">
 		<name>MyTimePolicy</name>
 		<years>1</years>
@@ -26,6 +13,10 @@
 		<hours>0</hours>
 		<minutes>0</minutes>
 		<seconds>0</seconds>
+	</policy>
+	<policy type="hitspolicy">
+		<name>MyHitsPolicy</name>
+		<minimumhits>0</minimumhits>
 	</policy>
 </policylist>
 
