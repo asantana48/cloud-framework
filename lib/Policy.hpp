@@ -12,6 +12,9 @@ public:
     // Name of the policy in question
     std::string name;
 
+    // Type of policy
+    std::string type;
+
     // Make a policy decision based on some absolute value
     virtual bool isFileKept(FileData fd) { return true; }
 };

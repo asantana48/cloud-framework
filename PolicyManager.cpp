@@ -54,6 +54,7 @@ void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	Policy* sizePolicy;
 	int lower;
 	int upper;
+	std::string name;
 
 	xmlChar *key;
 	cur = cur->xmlChildrenNode;
@@ -63,7 +64,7 @@ void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			sizePolicy->name = (char*) key;
+			name = (char*) key;
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"lowerbound"))
@@ -80,6 +81,8 @@ void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		cur = cur->next;
 	}
 	sizePolicy = new SizePolicy(lower, upper);
+	sizePolicy->name = name;
+	sizePolicy->type = "sizepolicy";
 	addPolicy(sizePolicy);
 }
 
@@ -87,6 +90,7 @@ void PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	Policy* hitPolicy;
 	int min;
+	std::string name;
 
 	xmlChar *key;
 	cur = cur->xmlChildrenNode;
@@ -96,7 +100,7 @@ void PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			hitPolicy->name = (char*) key;
+			name = (char*) key;
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"minimumhits"))
@@ -107,23 +111,27 @@ void PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 		cur = cur->next;
 	}
 	hitPolicy = new HitPolicy(min);
+	hitPolicy->name = name;
+	hitPolicy->type = "hitspolicy";
 	addPolicy(hitPolicy);
 }
 
 void PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	Policy* timePolicy;
+	int totalTimeInSeconds = 0;
+	std::string name;
 
 	xmlChar *key;
 	cur = cur->xmlChildrenNode;
-	int totalTimeInSeconds = 0;
+	
 
 	while (cur != NULL)
 	{
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			timePolicy->name = (char*) key;
+			name = (char*) key;
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"years"))
@@ -167,6 +175,8 @@ void PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	}
 
 	timePolicy = new TimePolicy(totalTimeInSeconds);
+	timePolicy->name = name;
+	timePolicy->type = "timepolicy";
 	addPolicy(timePolicy);
 }
 

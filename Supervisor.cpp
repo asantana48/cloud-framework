@@ -35,13 +35,12 @@ int main(int argc, char** argv)
     while (true)
     {        
         syslog(LOG_NOTICE, "test");
-        //string resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
-        //syslog(LOG_NOTICE, resp.c_str());
-        /*list<Policy*> policyList = pm.getPolicyList();
+        string resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
+        syslog(LOG_NOTICE, resp.c_str());
+        list<Policy*> policyList = pm.getPolicyList();
         for (auto policyIt = policyList.begin(); policyIt != policyList.end(); ++policyIt) {
-            syslog(LOG_NOTICE, (*policyIt)->name.c_str());
-        }*/
-        syslog(LOG_NOTICE, "test2");
+            syslog(LOG_NOTICE, (*policyIt)->type.c_str());
+        }
         sleep (2);
         break;
     }
@@ -102,40 +101,40 @@ void daemonize()
 }
 
 
-vector<FileData> getDemotionList(/*PolicyList*/)
-{
-    Redis_Scanner RS;
+// vector<FileData> getDemotionList(/*PolicyList*/)
+// {
+//     Redis_Scanner RS;
 
-    vector<FileData> demotionList;
-    vector<vector<FileData>> vectorHolder;
-    vector<FileData> temp4;
+//     vector<FileData> demotionList;
+//     vector<vector<FileData>> vectorHolder;
+//     vector<FileData> temp4;
 
-    // Grab and sort all files within file size policy range
-    vector<FileData> temp1 = RS.getFilesInSizeRange(/*Size Policy*/);
-    sortVector(temp1);
+//     // Grab and sort all files within file size policy range
+//     vector<FileData> temp1 = RS.getFilesInSizeRange(/*Size Policy*/);
+//     sortVector(temp1);
 
-    // Grab and sort all files within last modified time range
-    vector<FileData> temp2 = RS.getFilesInLastModifiedTime(/*TimePolicy*/);
-    sortVector(temp2);
+//     // Grab and sort all files within last modified time range
+//     vector<FileData> temp2 = RS.getFilesInLastModifiedTime(/*TimePolicy*/);
+//     sortVector(temp2);
 
-    // Grab and sort all files within times accessed range
-    vector<FileData> temp3 = RS.getFilesInTimesAccessedRange(/*HitPolicy*/);
-    sortVector(temp3);
+//     // Grab and sort all files within times accessed range
+//     vector<FileData> temp3 = RS.getFilesInTimesAccessedRange(/*HitPolicy*/);
+//     sortVector(temp3);
 
-    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
-    sortVector(demotionList);
+//     set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
+//     sortVector(demotionList);
 
-    set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(demotionList), orderFiles);
-    sortVector(demotionList);
+//     set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(demotionList), orderFiles);
+//     sortVector(demotionList);
 
-    cout << "Files to migrate:\n";
-    for (int i=0; i<demotionList.size(); i++)
-    {
-        cout << demotionList[i].fileName << endl;
-    }
+//     cout << "Files to migrate:\n";
+//     for (int i=0; i<demotionList.size(); i++)
+//     {
+//         cout << demotionList[i].fileName << endl;
+//     }
 
-    return demotionList;
-}
+//     return demotionList;
+// }
 
 void sortVector(vector<FileData>& files)
 {
