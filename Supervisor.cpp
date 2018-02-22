@@ -120,6 +120,8 @@ vector<FileData> getDemotionList(/*PolicyList*/)
     {
         cout << demotionList[i].fileName << endl;
     }
+
+    return demotionList;
 }
 
 void sortVector(vector<FileData>& files)
