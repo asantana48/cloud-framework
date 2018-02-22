@@ -12,18 +12,26 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <syslog.h>
+#include <thread>
+#include <atomic>
+
 
 using namespace std;
+std::atomic_bool ready;
 
+// Process & thread related tasks
 void daemonize();
+void manageFiles(PolicyManager& pm, int time);
+void updatePolicies(PolicyManager& pm, int time);
+
 bool orderFiles(FileData&, FileData&);
 void sortVector(vector<FileData>&);
 
 int main(int argc, char** argv)
 {
     // Intervals for various tasks
-    int policyInterval = 10;
-    int migrationInterval = 60;
+    int policyInterval = 5;
+    int migrationInterval = 15;
 
     // Create necessary classes
     PolicyManager pm;
@@ -32,22 +40,44 @@ int main(int argc, char** argv)
     daemonize();
 
     syslog (LOG_NOTICE, "Started the migration supervisor.");
-    while (true)
-    {        
-        syslog(LOG_NOTICE, "test");
-        string resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
-        syslog(LOG_NOTICE, resp.c_str());
-        list<Policy*> policyList = pm.getPolicyList();
-        for (auto policyIt = policyList.begin(); policyIt != policyList.end(); ++policyIt) {
-            syslog(LOG_NOTICE, (*policyIt)->type.c_str());
-        }
-        sleep (2);
-        break;
+    
+    std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
+    std::thread filesT(manageFiles, std::ref(pm), migrationInterval);
+    
+    while (true) {
+        sleep(1);
     }
 
     syslog (LOG_NOTICE, "Supervisor terminated.");
     closelog();
     return EXIT_SUCCESS;
+}
+
+void updatePolicies(PolicyManager& pm, int time) {
+    while (true) {
+        ready = false;
+        pm.clear();
+        string resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
+        
+        syslog(LOG_NOTICE, resp.c_str());
+        ready = true; 
+        sleep(time);
+               
+    }
+}
+
+void manageFiles(PolicyManager& pm, int time) {
+    
+    while (true) {
+        if (ready) {
+            //vector<FileData> demotionList = getDemotionList(&pm)
+            syslog(LOG_NOTICE, "ready! :)");
+            /*for (auto p : pm.getPolicyList()) {
+                syslog(LOG_NOTICE, p->type.c_str());
+            }*/
+        }
+        sleep(time);
+    }
 }
 
 void daemonize()

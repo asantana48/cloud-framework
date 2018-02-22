@@ -31,6 +31,7 @@ public:
     ~PolicyManager();
 
     void addPolicy(Policy* p);
+    void clear();
 	bool isFilePromoted(FileData fd);
 	std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
     

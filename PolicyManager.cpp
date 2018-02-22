@@ -17,6 +17,14 @@ void PolicyManager::addPolicy(Policy* p)
     policyList.push_back(p);
 }
 
+void PolicyManager::clear() {
+	auto it = policyList.begin();
+    while (it != policyList.end()) {
+        delete *it;
+        it = policyList.erase(it);
+    }
+}
+
 bool PolicyManager::isFilePromoted(FileData fd)
 {
     for (auto it = policyList.begin(); it != policyList.end(); ++it) {
