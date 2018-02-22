@@ -24,7 +24,7 @@ private:
     void parsePolicy (xmlDocPtr doc, xmlNodePtr culr);
     void parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur);
     void parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur);
-    void streamFile(const char *filename);
+    std::string streamFile(const char* filename);
     
 public:
     PolicyManager() {}
@@ -34,7 +34,7 @@ public:
 	bool isFilePromoted(FileData fd);
 	std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
     
-    void parsePoliciesFromXMLFile(std::string filename);
+    std::string parsePoliciesFromXMLFile(std::string filename);
 
     std::list<Policy*> getPolicyList();
 };

@@ -21,15 +21,28 @@ void sortVector(vector<FileData>&);
 
 int main(int argc, char** argv)
 {
+    // Intervals for various tasks
     int policyInterval = 10;
     int migrationInterval = 60;
 
+    // Create necessary classes
+    PolicyManager pm;
+
+    // Spawn daemon
     daemonize();
+
     syslog (LOG_NOTICE, "Started the migration supervisor.");
     while (true)
-    {
-        //TODO: Insert daemon code here.
-        sleep (20);
+    {        
+        syslog(LOG_NOTICE, "test");
+        //string resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
+        //syslog(LOG_NOTICE, resp.c_str());
+        /*list<Policy*> policyList = pm.getPolicyList();
+        for (auto policyIt = policyList.begin(); policyIt != policyList.end(); ++policyIt) {
+            syslog(LOG_NOTICE, (*policyIt)->name.c_str());
+        }*/
+        syslog(LOG_NOTICE, "test2");
+        sleep (2);
         break;
     }
 
@@ -133,39 +146,4 @@ bool orderFiles(FileData& file1, FileData& file2)
 {
     return (file1.location < file2.location);
 }
-/*
-int main(int argc, char* argv[]) {
-    // Get the policies from the file
-    PolicyManager pm;
-    pm.addPolicy(new SizePolicy(10*1024*1024, false));
 
-    // Get file list and metadata
-    list<string> filenames = FileUtils::List(FILES_PATH.c_str());
-    list<FileData> files;
-    Redis_Client RC;
-    struct stat statObj;
-    for (string name: filenames) {
-        string full_path = FILES_PATH + name;
-        stat(full_path.c_str(), &statObj);
-
-        // Put information in metadata object
-        FileData fd;
-        fd.fileName = name;
-        fd.location = full_path;
-        cout << fd.getName() << endl;
-        fd.fileSize = statObj.st_size;
-        fd.lastModified = statObj.st_atime;
-        files.push_back(fd);
-        RC.Redis_HMSET(fd);
-    }
-
-    /*AWSConnector aws;
-    aws.connect("us-east-2");
-    aws.setBucket("devon-bucket");
-
-    list<FileData> migrate = pm.getFileDemotionList(files);
-    for (FileData f: migrate) {
-        aws.putObject(f.location, f.getName());
-    }
-    return 0;
-}*/
