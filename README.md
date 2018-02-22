@@ -7,7 +7,26 @@ Redox for Redis
 
 libxml2
 
-## Compiling
-g++ Migrator.cpp AWSConnector.cpp PolicyManager.cpp Redis_Database/Redis_Client.cpp Redis_Database/Redis_Scanner.cpp-laws-cpp-sdk-s3 -laws-cpp-sdk-core -std=c++14 -lredox -lev -lhiredis [-I/usr/include/libxml2 | -lxml2] -o cloud_framework
+## Relevant commands
+
+### Compiling
+make initialize
+make supervise
+make recall
+
+### Running 
+Run initialize once (./initialize)
+
+Run supervise, which will spawn a migration supervisor daemon (./supervise)
+Check to make sure process created correctly: (ps aux | grep supervise)
+You can change the policies at runtime, which are located in res/policies.xml.
+When done, stop supervise (pkill supervise)
+
+Run recall to restore migrated files (./recall)
+NOTE that you should probably stop the supervise daemon before doing this.
+
+### Reading the log
+journalctl /home/andres/Projects/cloud-framework/supervise 
+
 
 

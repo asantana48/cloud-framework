@@ -32,8 +32,8 @@ vector<FileData> getDemotionList(PolicyManager& pm);
 int main(int argc, char** argv)
 {
     // Intervals for various tasks
-    int policyInterval = 5;
-    int migrationInterval = 15;
+    int policyInterval = 8;
+    int migrationInterval = 24;
 
     // Create necessary classes
     PolicyManager pm;
@@ -80,12 +80,11 @@ void manageFiles(PolicyManager& pm, int time) {
     
     while (true) {
         if (ready) {
-            syslog(LOG_NOTICE, "Querying database for demotion candidates");
+            syslog(LOG_NOTICE, "Querying database for demotion candidates.");
             vector<FileData> demotionList = getDemotionList(pm);
+            syslog(LOG_NOTICE, "Demoting the following files:");
             for (FileData fd: demotionList) {
-                char buf[80];
-                sprintf(buf, "Found %s", fd.getName());
-                syslog(LOG_NOTICE, buf);
+                syslog(LOG_NOTICE, fd.getName().c_str());
                 if (fd.isLocal) {
                     aws.demoteObject(bucket, fd.location, fd.getName());
                 }
