@@ -77,6 +77,7 @@ void manageFiles(PolicyManager& pm, int time) {
     std::string region = "us-east-2";
 	std::string bucket = "devon-bucket";
     aws.connect(region);
+    
     while (true) {
         if (ready) {
             syslog(LOG_NOTICE, "Querying database for demotion candidates");
@@ -89,7 +90,6 @@ void manageFiles(PolicyManager& pm, int time) {
                     aws.demoteObject(bucket, fd.location, fd.getName());
                 }
             } 
-
             sleep(time);
         }
     }

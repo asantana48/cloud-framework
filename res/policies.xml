@@ -3,16 +3,16 @@
 	<policy type="sizepolicy">
 		<name>size</name>
 		<lowerbound>52</lowerbound>
-		<upperbound>5541000</upperbound>
+		<upperbound>21971520</upperbound>
 	</policy>
 	<policy type="timepolicy">
 		<name>MyTimePolicy</name>
-		<years>1</years>
+		<years>0</years>
 		<months>0</months>
 		<days>0</days>
 		<hours>0</hours>
 		<minutes>0</minutes>
-		<seconds>0</seconds>
+		<seconds>5</seconds>
 	</policy>
 	<policy type="hitspolicy">
 		<name>MyHitsPolicy</name>
