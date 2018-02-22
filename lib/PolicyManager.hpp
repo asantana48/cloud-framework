@@ -21,22 +21,21 @@ private:
     std::list<Policy*> policyList;
 	
     void parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur);
-    void parsePolicy (xmlDocPtr doc, xmlNodePtr cur);
+    void parsePolicy (xmlDocPtr doc, xmlNodePtr culr);
     void parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur);
     void parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur);
     void streamFile(const char *filename);
     
-    // Out of 100
-    int saturation;
 public:
     PolicyManager() {}
     ~PolicyManager();
 
     void addPolicy(Policy* p);
-    void setMaxSaturation(int saturation);
 	bool isFilePromoted(FileData fd);
 	std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
     
     void parsePoliciesFromXMLFile(std::string filename);
+
+    std::list<Policy*> getPolicyList();
 };
 #endif
