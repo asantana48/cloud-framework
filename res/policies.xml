@@ -10,7 +10,22 @@
 
 		<lowerbound>50</lowerbound>
 		<upperbound>123</upperbound>
-		<name>size</name>
+		<name>sizePol2</name>
+	</policy>
+
+	<policy type="hitspolicy">
+		<name>MyHitsPolicy</name>
+		<minimumhits>24</minimumhits>
+	</policy>
+
+	<policy type="timepolicy">
+		<name>MyTimePolicy</name>
+		<years>1</years>
+		<months>0</months>
+		<days>0</days>
+		<hours>0</hours>
+		<minutes>0</minutes>
+		<seconds>0</seconds>
 	</policy>
 </policylist>
 
