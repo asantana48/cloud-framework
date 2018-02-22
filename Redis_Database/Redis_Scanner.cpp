@@ -37,17 +37,15 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 	rdx.disconnect();
 }
 
+
 /* Return a vector of file locations with a file size between the 
 * lowLimit and the highLimit. The low and high limits are inclusive
 * values when comparing file size values.
 *
-* @param int lowLimit
-*	The low boundary for the fileSize policy
+* @param SizePolicy policy
+*	Contains the high and low size thresholds
 *
-* @param int highLimit
-*	The high boundary for the fileSize policy
-*
-* @return vector<string> c
+* @return vector<string> files
 *	Contains all of the file locations of files that fit the file size policy
 */
 vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
@@ -69,40 +67,18 @@ vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
 	return files;
 }
 
-/*
-vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
-{
-	Redox rdx;
-	rdx.connect("localhost", 6379);
-	Command<vector<string>>& c;
-	if(policy.greaterThan == true)
-	{
-		c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", to_string(policy.getLowThreshold), "+inf"});
-	}
-	else if(policy.greaterThan == false)
-	{
-		c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", "-inf", to_string(policy.getHighThreshold)});
-	}
-	vector<string> temp(c.reply());
-	Redis_Client RC;
-	vector<FileData> files;
-	for (int i=0; i< temp.size(); i++)
-	{
-		files.push_back(RC.Redis_HGETALL(temp[i]));
-	}
-	c.free();
-	rdx.disconnect();
-	return files;
-}
+
+/* Add file name and last time modified to a sorted list
+*
+* @param FileData& file
+*	FileData object containing all values related to a file 
 */
-
-
 void Redis_Scanner::addToLastModifiedSet(FileData& file)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 
-	Command<int>& c = rdx.commandSync<int>({"ZADD", "Last_Modified", to_string(file.lastModified), file.location});
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "Last_Modified", to_string(static_cast<long int>(file.lastModified)), file.location});
 	if(c.reply() == 1)
 	{
 		cout << file.fileName << " successfully added to last modified set!\n";
@@ -115,9 +91,31 @@ void Redis_Scanner::addToLastModifiedSet(FileData& file)
 	rdx.disconnect();
 }
 
-/**
-vector<FileData> getFilesInWithinLastModifiedTime()
-{
 
-}
+/* Return a vector of file locations with a last modified time
+* that is greater than the threshold time set in the TimePolicy file.
+*
+* @param TimePolicy policy
+*
+* @return vector<string> files
+*	Contains all of the file locations of files that fit the time policy
 */
+vector<FileData> Redis_Scanner::getFilesWithinLastModifiedTime(TimePolicy policy)
+{
+	long int timeThreshold = static_cast<long int>(time(NULL)) - policy.getMinimumAge();
+
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Last_Modified", "-inf", to_string(timeThreshold)});
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+	c.free();
+	rdx.disconnect();
+	return files;
+}
+

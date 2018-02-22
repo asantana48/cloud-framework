@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 	time(&currentTime);
 	//currentTime = localtime(&t);
 
-	struct FileData File1 = {"/home/file1", "File1", 500, 120, currentTime, true};
+	struct FileData File1 = {"/home/file1", "File1", 500, 120, static_cast<long int>(currentTime) - 865000, true};
 	struct FileData File2 = {"/home/file2", "File2", 260, 250, currentTime, true};
 	struct FileData File3 = {"/home/file3", "File3", 1024, 3000, currentTime, true};
 	struct FileData File4 = {"/home/file4", "File4", 780, 1000, currentTime, true};
@@ -60,14 +60,15 @@ int main(int argc, char* argv[])
 	cout << "/home/file4: " << RC.getFileSize("/home/file4") << endl;
 
 	
-
-	vector<FileData> fileSizes1 = RS.getFilesInSizeRange(0, 10000);
-	cout << "Return files with size between 0 and 10000 bytes\n";
+	SizePolicy SP(0, 1000);
+	vector<FileData> fileSizes1 = RS.getFilesInSizeRange(SP);
+	cout << "Return files with size between 0 and 1000 bytes\n";
 	for (int i=0; i<fileSizes1.size(); i++)
 	{
 		cout << fileSizes1[i].fileName << endl;
 	}
 
+	/*
 	vector<FileData> fileSizes2 = RS.getFilesInSizeRange(300, 700);
 	cout << "Return files with size between 300 and 700 bytes\n";
 	for (int i=0; i<fileSizes2.size(); i++)
@@ -88,6 +89,14 @@ int main(int argc, char* argv[])
 	{
 		cout << fileSizes4[i].fileName << endl;
 	}
-
+	*/
+	
+	TimePolicy TP(0, 0, 10, 0, 0, 0);
+	vector<FileData> temp1 = RS.getFilesWithinLastModifiedTime(TP);
+	cout << "Return files older than 10 days\n";
+	for (int i=0; i<temp1.size(); i++)
+	{
+		cout << temp1[i].fileName << endl;
+	}
 
 }

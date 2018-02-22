@@ -14,6 +14,10 @@ struct FileData
     time_t lastModified;
     bool isLocal;
 
+    void setFileName(std::string s){
+        fileName = s;
+    }
+
     void setFileSize(std::string s) {
         fileSize = stoi(s);
     }

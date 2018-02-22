@@ -31,6 +31,8 @@ public:
 		minimumAge = seconds + minutes + hours + days + months + years;
 	}
 
+	long int getMinimumAge() {return minimumAge;}
+
 
 	bool isFileKept(FileData dataObject) 
 	{

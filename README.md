@@ -2,6 +2,8 @@
 
 ## Requirements
 AWS SDK for C++: core, s3 components
+Redis
+Redox for Redis
 
 libxml2
 

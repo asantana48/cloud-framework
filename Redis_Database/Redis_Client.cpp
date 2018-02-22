@@ -4,7 +4,6 @@
 #include <ctime>
 #include "stdlib.h"
 
-
 #include "include/redox.hpp"
 #include "include/Redis_Client.hpp"
 #include "include/Redis_Scanner.hpp"
@@ -21,9 +20,10 @@ void Redis_Client::Redis_HMSET(FileData& file)
 	rdx.connect("localhost", 6379);
 	Command<string>& c = rdx.commandSync<string>({"HMSET", file.location, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
 	if(c.ok()) {
-		printf("File added to database!\n");
+		cout << file.fileName << " successfully added to the database!\n";
 		Redis_Scanner RS;
 		RS.addToFileSizeSet(file);
+		RS.addToLastModifiedSet(file);
 	}
 	else {
 		cerr << "Command has error code " << c.status() << endl;
@@ -75,6 +75,7 @@ void Redis_Client::setFileName(string key, string fileName)
 	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Name", fileName});
 	c.free();
 	rdx.disconnect();
+	updateLastTimeModified(key);
 }
 
 
@@ -99,6 +100,7 @@ void Redis_Client::setFileSize(string key, int fileSize)
 	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Size", to_string(fileSize)});
 	c.free();
 	rdx.disconnect();
+	updateLastTimeModified(key);
 }
 
 
@@ -125,6 +127,7 @@ void Redis_Client::incrementTimesAccessed(string key)
 	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Times_Accessed", to_string(times_accessed)});
 	c.free();
 	rdx.disconnect();
+	updateLastTimeModified(key);
 }
 
 
@@ -149,6 +152,7 @@ void Redis_Client::setIsLocal(string key, bool isLocal)
 	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Is_Local", to_string(isLocal)});
 	c.free();
 	rdx.disconnect();
+	updateLastTimeModified(key);
 }
 
 

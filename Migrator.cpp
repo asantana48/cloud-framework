@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
 
         // Put information in metadata object
         FileData fd;
+        fd.fileName = name;
         fd.location = full_path;
         cout << fd.getName() << endl;
         fd.fileSize = statObj.st_size;
