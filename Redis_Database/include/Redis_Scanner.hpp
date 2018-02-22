@@ -31,9 +31,17 @@ public:
 	
 	void addToLastModifiedSet(FileData&);
 	vector<FileData> getFilesInLastModifiedTime(TimePolicy);
+	vector<FileData> getFilesOutOfLastModifiedTime(TimePolicy);
+
 
 	void addToHitList(FileData&);
 	vector<FileData> getFilesInTimesAccessedRange(HitPolicy);
+	vector<FileData> getFilesOutOfTimesAccessedRange(HitPolicy);
+
+
+	void addToIsLocalList(FileData&);
+	vector<FileData> getLocalFiles();
+	vector<FileData> getNonLocalFiles();
 };
 
 #endif

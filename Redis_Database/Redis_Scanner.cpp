@@ -119,6 +119,25 @@ vector<FileData> Redis_Scanner::getFilesInLastModifiedTime(TimePolicy policy)
 	return files;
 }
 
+vector<FileData> Redis_Scanner::getFilesOutOfLastModifiedTime(TimePolicy policy)
+{
+	long int timeThreshold = static_cast<long int>(time(NULL)) - policy.getMinimumAge();
+
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Last_Modified", to_string(timeThreshold), "+inf"});
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+	c.free();
+	rdx.disconnect();
+	return files;
+}
+
 /* Add file name and total times accessed to a sorted set
 *
 * @param FileData& file
@@ -142,6 +161,7 @@ void Redis_Scanner::addToHitList(FileData& file)
 	rdx.disconnect();
 }
 
+// Find files that meet time accessed demotion policy
 vector<FileData> Redis_Scanner::getFilesInTimesAccessedRange(HitPolicy policy)
 {
 	int hitsThreshold = policy.getHits();
@@ -149,6 +169,78 @@ vector<FileData> Redis_Scanner::getFilesInTimesAccessedRange(HitPolicy policy)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Times_Accessed", "-inf", to_string(hitsThreshold)});
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+	c.free();
+	rdx.disconnect();
+	return files;
+}
+
+// Find files that meet time accessed promotion policy
+vector<FileData> Redis_Scanner::getFilesOutOfTimesAccessedRange(HitPolicy policy)
+{
+	int hitsThreshold = policy.getHits();
+
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Times_Accessed", to_string(hitsThreshold), "+inf"});
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+	c.free();
+	rdx.disconnect();
+	return files;
+}
+
+void Redis_Scanner::addToIsLocalList(FileData& file)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "Is_Local", to_string(file.isLocal), file.location});
+	if(c.reply() == 1)
+	{
+		cout << file.fileName << " successfully added to is local set!\n";
+	}
+	else
+	{
+		cout << "Error while adding file to is local set!\n";
+	}
+	c.free();
+	rdx.disconnect();
+}
+
+vector<FileData> Redis_Scanner::getLocalFiles()
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Is_Local", "1", "1"});
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	vector<FileData> files;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+	c.free();
+	rdx.disconnect();
+	return files;
+}
+
+vector<FileData> Redis_Scanner::getNonLocalFiles()
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Is_Local", "0", "0"});
 	vector<string> temp(c.reply());
 	Redis_Client RC;
 	vector<FileData> files;

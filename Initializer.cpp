@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
         fd.fileSize = statObj.st_size;
         fd.lastModified = statObj.st_atime;
         fd.timesAccessed = 0;
-        fd.isLocal = false;
+        fd.isLocal = true;
 
         // Put info in db
         RC.Redis_HMSET(fd);

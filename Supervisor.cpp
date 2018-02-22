@@ -101,40 +101,82 @@ void daemonize()
 }
 
 
-// vector<FileData> getDemotionList(/*PolicyList*/)
-// {
-//     Redis_Scanner RS;
+/*
+vector<FileData> getDemotionList(PolicyList)
+{
+    Redis_Scanner RS;
+    vector<FileData> demotionList;
+    vector<FileData> temp1;
+    vector<FileData> temp2;
 
-//     vector<FileData> demotionList;
-//     vector<vector<FileData>> vectorHolder;
-//     vector<FileData> temp4;
+     // Grab and sort all files within file size policy range
+    vector<FileData> inSizeRange = RS.getFilesInSizeRange(Size Policy);
+    sortVector(inSizeRane);
 
-//     // Grab and sort all files within file size policy range
-//     vector<FileData> temp1 = RS.getFilesInSizeRange(/*Size Policy*/);
-//     sortVector(temp1);
+     // Grab and sort all files within last modified time range
+    vector<FileData> inTimeRange = RS.getFilesInLastModifiedTime(TimePolicy);
+    sortVector(inTimeRange);
 
-//     // Grab and sort all files within last modified time range
-//     vector<FileData> temp2 = RS.getFilesInLastModifiedTime(/*TimePolicy*/);
-//     sortVector(temp2);
+     // Grab and sort all files within times accessed range
+    vector<FileData> inHitsRange = RS.getFilesInTimesAccessedRange(HitPolicy);
+    sortVector(inHitsRange);
 
-//     // Grab and sort all files within times accessed range
-//     vector<FileData> temp3 = RS.getFilesInTimesAccessedRange(/*HitPolicy*/);
-//     sortVector(temp3);
+     // Grab and sort all files that are local
+    vector<FileData> isLocal = RS.getLocalFiles();
+    sortVector(isLocal);
 
-//     set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
-//     sortVector(demotionList);
+    set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp1), orderFiles);
+    sortVector(temp1);
+    
+    set_intersection(inHitsRange.begin(), inHitsRange.end(), isLocal.begin(), isLocal.end(), back_inserter(temp2), orderFiles);
+    sortVector(temp2);
+    
+    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(demotionList), orderFiles);
+    sortVector(demotionList);    
+    
+    cout << "Files to demote:\n";
+    for (int i=0; i<demotionList.size(); i++)
+    {
+        cout << demotionList[i].fileName << endl;
+    }
+     return demotionList;
+}
 
-//     set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(demotionList), orderFiles);
-//     sortVector(demotionList);
 
-//     cout << "Files to migrate:\n";
-//     for (int i=0; i<demotionList.size(); i++)
-//     {
-//         cout << demotionList[i].fileName << endl;
-//     }
+vector<FileData> getPromotionList(PolicyList)
+{
+    Redis_Scanner RS;
+    vector<FileData> promotionList;
+    vector<FileData> temp1;
+    vector<FileData> temp2;
 
-//     return demotionList;
-// }
+    // Grab and sort all files outside of last modified time range
+    vector<FileData> inTimeRange = RS.getFilesInLastModifiedTime(TimePolicy);
+    sortVector(inTimeRange);
+    
+    // Grab and sort all files outside of times accessed range
+    vector<FileData> inHitsRange = RS.getFilesInTimesAccessedRange(HitPolicy);
+    sortVector(inHitsRange);
+    
+    // Grab and sort all files that are not local
+    vector<FileData> isLocal = RS.getLocalFiles();
+    sortVector(isLocal);
+    
+    set_intersection(inHitsRange.begin(), inHitsRange.end(), isLocal.begin(), isLocal.end(), back_inserter(temp1), orderFiles);
+    sortVector(temp1);
+    
+    set_intersection(temp1.begin(), temp1.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(promotionList), orderFiles);
+    sortVector(promotionList);  
+    
+    cout << "Files to promote:\n";
+    for (int i=0; i<promotionList.size(); i++)
+    {
+        cout << promotionList[i].fileName << endl;
+    }
+     return promotionList;
+}
+*/
+
 
 void sortVector(vector<FileData>& files)
 {

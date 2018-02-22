@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 
 	struct FileData File1 = {"/home/file1", "File1", 500, 120, static_cast<long int>(currentTime) - 865000, true};
 	struct FileData File2 = {"/home/file2", "File2", 260, 250, static_cast<long int>(currentTime) - 865000, true};
-	struct FileData File3 = {"/home/file3", "File3", 1024, 790, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File3 = {"/home/file3", "File3", 1024, 790, static_cast<long int>(currentTime), true};
 	struct FileData File4 = {"/home/file4", "File4", 780, 810, static_cast<long int>(currentTime) - 865000, true};
 
 	// File sizes will be added to sorted set through this function
@@ -91,12 +91,26 @@ int main(int argc, char* argv[])
 		cout << temp11[i].fileName << endl;
 	}
 
+	vector<FileData> temp12 = RS.getFilesOutOfLastModifiedTime(TP);
+	cout << "Return files younger than 10 days\n";
+	for (int i=0; i<temp12.size(); i++)
+	{
+		cout << temp12[i].fileName << endl;
+	}
+
 	HitPolicy HP(800);
 	vector<FileData> temp21 = RS.getFilesInTimesAccessedRange(HP);
 	cout << "Return files with less than 800 hits\n";
 	for (int i=0; i<temp21.size(); i++)
 	{
 		cout << temp21[i].fileName << endl;
+	}
+	
+	vector<FileData> temp22 = RS.getFilesOutOfTimesAccessedRange(HP);
+	cout << "Return files with more than 800 hits\n";
+	for (int i=0; i<temp22.size(); i++)
+	{
+		cout << temp22[i].fileName << endl;
 	}
 	
 
