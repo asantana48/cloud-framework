@@ -23,6 +23,8 @@ private:
     void parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur);
     void parsePolicy (xmlDocPtr doc, xmlNodePtr cur);
     void streamFile(const char *filename);
+    void parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur);
+    void parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur);
     
     
     // Out of 100
