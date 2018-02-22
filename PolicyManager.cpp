@@ -229,12 +229,9 @@ void PolicyManager::streamFile(const char *filename) {
 
 }
 
-void PolicyManager::parsePoliciesFromXMLFile() 
-{
-    char configFileName[] = "/home/andres/Projects/cloud-framework/res/policies.xml";
-
-  
-    this->streamFile(configFileName);
+void PolicyManager::parsePoliciesFromXMLFile(std::string configFileName) 
+{  
+    this->streamFile(configFileName.c_str());
 
     /*
      * Cleanup function for the XML library.

@@ -18,7 +18,7 @@ public:
 
     bool isFileKept(FileData dataObject)
     {
-        if (hits > dataObject.timesAccessed)
+        if (hits <= dataObject.timesAccessed)
             return true;
         else
             return false;

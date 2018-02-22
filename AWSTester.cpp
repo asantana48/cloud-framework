@@ -21,13 +21,13 @@ int main(int argc, char* argv[])
 	cout << endl;
 
 	cout << "OBJECTS in devon-bucket\n";
-	for (auto const &b: aws.listBucketContents("devon-bucket"))
-		cout << b.fileName << " (" << b.location << ")" << endl;
+	for (auto &b: aws.listBucketContents("devon-bucket"))
+		cout << b.getName() << " (" << b.getFileSize() << ")" << endl;
 	cout << endl;
 
 	cout << "ALL OBJECTS\n";
-	for (auto const &b: aws.listAllObjects())
-		cout << b.fileName << " (" << b.location << ")" << endl;
+	for (auto &b: aws.listAllObjects())
+		cout << b.getName() << " (" << b.getFileSize() << ")" << endl;
 	cout << endl;
 	
 	for (int i = 0; i < argc; ++i) 

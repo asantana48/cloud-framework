@@ -24,7 +24,6 @@ private:
     void parsePolicy (xmlDocPtr doc, xmlNodePtr cur);
     void streamFile(const char *filename);
     
-    
     // Out of 100
     int saturation;
 public:
@@ -35,7 +34,9 @@ public:
     void setMaxSaturation(int saturation);
 	bool isFilePromoted(FileData fd);
 	std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
-    void parsePoliciesFromXMLFile();
+    void parsePoliciesFromXMLFile(std::string filename);
 
+    void parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur);
+    void parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur);
 };
 #endif
