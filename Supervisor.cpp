@@ -16,6 +16,8 @@
 using namespace std;
 
 void daemonize();
+bool orderFiles(FileData&, FileData&);
+void sortVector(vector<FileData>&);
 
 int main(int argc, char** argv)
 {
@@ -84,6 +86,52 @@ void daemonize()
 
     // Open a log file
     openlog ("supervisor", LOG_PID, LOG_DAEMON);
+}
+
+
+vector<FileData> getDemotionList(/*PolicyList*/)
+{
+    Redis_Scanner RS;
+
+    vector<FileData> demotionList;
+    vector<vector<FileData>> vectorHolder;
+    vector<FileData> temp4;
+
+    // Grab and sort all files within file size policy range
+    vector<FileData> temp1 = RS.getFilesInSizeRange(/*Size Policy*/);
+    sortVector(temp1);
+
+    // Grab and sort all files within last modified time range
+    vector<FileData> temp2 = RS.getFilesInLastModifiedTime(/*TimePolicy*/);
+    sortVector(temp2);
+
+    // Grab and sort all files within times accessed range
+    vector<FileData> temp3 = RS.getFilesInTimesAccessedRange(/*HitPolicy*/);
+    sortVector(temp3);
+
+    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
+    sortVector(demotionList);
+
+    set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(demotionList), orderFiles);
+    sortVector(demotionList);
+
+    cout << "Files to migrate:\n";
+    for (int i=0; i<demotionList.size(); i++)
+    {
+        cout << demotionList[i].fileName << endl;
+    }
+
+    return demotionList;
+}
+
+void sortVector(vector<FileData>& files)
+{
+    sort (files.begin(), files.end(), orderFiles);
+}
+
+bool orderFiles(FileData& file1, FileData& file2)
+{
+    return (file1.location < file2.location);
 }
 /*
 int main(int argc, char* argv[]) {
