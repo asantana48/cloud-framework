@@ -15,11 +15,16 @@ using namespace std;
 
 
 
+
 bool orderFiles(FileData& file1, FileData& file2)
 {
 	return (file1.location < file2.location);
 }
 
+void sortVector(vector<FileData>& files)
+{
+    sort (files.begin(), files.end(), orderFiles);
+}
 
 
 int main(int argc, char* argv[])
@@ -71,45 +76,56 @@ int main(int argc, char* argv[])
 
 	
 	SizePolicy SP(0, 1000);
-	vector<FileData> temp3 = RS.getFilesInSizeRange(SP);
+	vector<FileData> temp31 = RS.getFilesInSizeRange(SP);
 	cout << "Return files with size between 0 and 1000 bytes\n";
-	for (int i=0; i<temp3.size(); i++)
+	for (int i=0; i<temp31.size(); i++)
 	{
-		cout << temp3[i].fileName << endl;
+		cout << temp31[i].fileName << endl;
 	}
 
 	TimePolicy TP(0, 0, 10, 0, 0, 0);
-	vector<FileData> temp1 = RS.getFilesInLastModifiedTime(TP);
+	vector<FileData> temp11 = RS.getFilesInLastModifiedTime(TP);
 	cout << "Return files older than 10 days\n";
-	for (int i=0; i<temp1.size(); i++)
+	for (int i=0; i<temp11.size(); i++)
 	{
-		cout << temp1[i].fileName << endl;
+		cout << temp11[i].fileName << endl;
 	}
 
 	HitPolicy HP(800);
-	vector<FileData> temp2 = RS.getFilesInTimesAccessedRange(HP);
+	vector<FileData> temp21 = RS.getFilesInTimesAccessedRange(HP);
 	cout << "Return files with less than 800 hits\n";
-	for (int i=0; i<temp2.size(); i++)
+	for (int i=0; i<temp21.size(); i++)
 	{
-		cout << temp2[i].fileName << endl;
+		cout << temp21[i].fileName << endl;
 	}
+	
 
-	vector<FileData> finalList;
-	vector<FileData> temp4;
-	//vector<int>::iterator it;
+	vector<FileData> demotionList;
+    vector<vector<FileData>> vectorHolder;
+    vector<FileData> temp4;
 
-	sort (temp1.begin(), temp1.end(), orderFiles);
-	sort (temp2.begin(), temp2.end(), orderFiles);
-	sort (temp3.begin(), temp3.end(), orderFiles);
+    // Grab and sort all files within file size policy range
+    vector<FileData> temp1 = RS.getFilesInSizeRange(SP);
+    sortVector(temp1);
 
+    // Grab and sort all files within last modified time range
+    vector<FileData> temp2 = RS.getFilesInLastModifiedTime(TP);
+    sortVector(temp2);
 
-	set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
-	set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(finalList), orderFiles);
+    // Grab and sort all files within times accessed range
+    vector<FileData> temp3 = RS.getFilesInTimesAccessedRange(HP);
+    sortVector(temp3);
+
+    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
+    sortVector(demotionList);
+
+    set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(demotionList), orderFiles);
+    sortVector(demotionList);
 
 	cout << "Files to migrate:\n";
-	for (int i=0; i<finalList.size(); i++)
+	for (int i=0; i<demotionList.size(); i++)
 	{
-		cout << finalList[i].fileName << endl;
+		cout << demotionList[i].fileName << endl;
 	}
 
 }
