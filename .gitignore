@@ -1,6 +1,7 @@
-/a.out
-/.vscode
+a.out
+.vscode
 initialize
 migrate
 supervise
-request
+recall
+cloud_framework
