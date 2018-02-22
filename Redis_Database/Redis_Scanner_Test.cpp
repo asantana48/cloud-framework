@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <algorithm>
 #include "stdlib.h"
 
 #include "include/Redis_Scanner.hpp"
@@ -11,6 +12,15 @@ using namespace std;
 //using redox::Redox;
 //using redox::Command;
 //using redox::Subscriber;
+
+
+
+bool orderFiles(FileData& file1, FileData& file2)
+{
+	return (file1.location < file2.location);
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -43,9 +53,9 @@ int main(int argc, char* argv[])
 	//currentTime = localtime(&t);
 
 	struct FileData File1 = {"/home/file1", "File1", 500, 120, static_cast<long int>(currentTime) - 865000, true};
-	struct FileData File2 = {"/home/file2", "File2", 260, 250, currentTime, true};
-	struct FileData File3 = {"/home/file3", "File3", 1024, 3000, currentTime, true};
-	struct FileData File4 = {"/home/file4", "File4", 780, 1000, currentTime, true};
+	struct FileData File2 = {"/home/file2", "File2", 260, 250, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File3 = {"/home/file3", "File3", 1024, 790, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File4 = {"/home/file4", "File4", 780, 810, static_cast<long int>(currentTime) - 865000, true};
 
 	// File sizes will be added to sorted set through this function
 	RC.Redis_HMSET(File1);
@@ -61,35 +71,12 @@ int main(int argc, char* argv[])
 
 	
 	SizePolicy SP(0, 1000);
-	vector<FileData> fileSizes1 = RS.getFilesInSizeRange(SP);
+	vector<FileData> temp3 = RS.getFilesInSizeRange(SP);
 	cout << "Return files with size between 0 and 1000 bytes\n";
-	for (int i=0; i<fileSizes1.size(); i++)
+	for (int i=0; i<temp3.size(); i++)
 	{
-		cout << fileSizes1[i].fileName << endl;
+		cout << temp3[i].fileName << endl;
 	}
-
-	/*
-	vector<FileData> fileSizes2 = RS.getFilesInSizeRange(300, 700);
-	cout << "Return files with size between 300 and 700 bytes\n";
-	for (int i=0; i<fileSizes2.size(); i++)
-	{
-		cout << fileSizes2[i].fileName << endl;
-	}
-
-	vector<FileData> fileSizes3 = RS.getFilesInSizeRange(260, 1024);
-	cout << "Return files with size between 260 and 1024 bytes\n";
-	for (int i=0; i<fileSizes3.size(); i++)
-	{
-		cout << fileSizes3[i].fileName << endl;
-	}
-
-	vector<FileData> fileSizes4 = RS.getFilesInSizeRange(1000, 0);
-	cout << "Return files with size between 1000 and 0 bytes\n";
-	for (int i=0; i<fileSizes4.size(); i++)
-	{
-		cout << fileSizes4[i].fileName << endl;
-	}
-	*/
 
 	TimePolicy TP(0, 0, 10, 0, 0, 0);
 	vector<FileData> temp1 = RS.getFilesInLastModifiedTime(TP);
@@ -105,6 +92,24 @@ int main(int argc, char* argv[])
 	for (int i=0; i<temp2.size(); i++)
 	{
 		cout << temp2[i].fileName << endl;
+	}
+
+	vector<FileData> finalList;
+	vector<FileData> temp4;
+	//vector<int>::iterator it;
+
+	sort (temp1.begin(), temp1.end(), orderFiles);
+	sort (temp2.begin(), temp2.end(), orderFiles);
+	sort (temp3.begin(), temp3.end(), orderFiles);
+
+
+	set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
+	set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(finalList), orderFiles);
+
+	cout << "Files to migrate:\n";
+	for (int i=0; i<finalList.size(); i++)
+	{
+		cout << finalList[i].fileName << endl;
 	}
 
 }
