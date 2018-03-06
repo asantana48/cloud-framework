@@ -83,6 +83,13 @@ int main(int argc, char* argv[])
 		cout << temp31[i].fileName << endl;
 	}
 
+	vector<FileData> temp32 = RS.getFilesOutOfSizeRange(SP);
+	cout << "Return files with size outside of 0 and 1000 bytes\n";
+	for (int i=0; i<temp32.size(); i++)
+	{
+		cout << temp32[i].fileName << endl;
+	}
+
 	TimePolicy TP(0, 0, 10, 0, 0, 0);
 	vector<FileData> temp11 = RS.getFilesInLastModifiedTime(TP);
 	cout << "Return files older than 10 days\n";
@@ -113,6 +120,14 @@ int main(int argc, char* argv[])
 		cout << temp22[i].fileName << endl;
 	}
 	
+	std::list<Policy> policyList;
+
+	policyList.push_back(SP);
+
+	policyList.push_back(HP);
+
+	policyList.push_back(TP);
+
 
 	vector<FileData> demotionList;
     vector<vector<FileData>> vectorHolder;
@@ -143,3 +158,4 @@ int main(int argc, char* argv[])
 	}
 
 }
+

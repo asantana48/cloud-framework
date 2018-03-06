@@ -5,14 +5,15 @@
 		<lowerbound>52</lowerbound>
 		<upperbound>21971520</upperbound>
 	</policy>
+		
 	<policy type="timepolicy">
 		<name>MyTimePolicy</name>
-		<years>0</years>
+		<years>1</years>
 		<months>0</months>
 		<days>0</days>
 		<hours>0</hours>
 		<minutes>0</minutes>
-		<seconds>5</seconds>
+		<seconds>0</seconds>
 	</policy>
 	<policy type="hitspolicy">
 		<name>MyHitsPolicy</name>

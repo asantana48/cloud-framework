@@ -67,6 +67,37 @@ vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
 	return files;
 }
 
+vector<FileData> Redis_Scanner::getFilesOutOfSizeRange(SizePolicy policy)
+{
+	int lowLimit = policy.getLowThreshold();
+	int highLimit = policy.getHighThreshold();
+	Redox rdx;
+	vector<FileData> files;
+	rdx.connect("localhost", 6379);
+
+	// Grab all files with a size less than the lowLimit
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", "-inf", to_string(lowLimit)});
+	vector<string> temp(c.reply());
+	Redis_Client RC;
+	for (int i=0; i< temp.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp[i]));
+	}
+
+	// Grab all files with a size greater than the highLimit 
+	Command<vector<string>>& c1 = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", to_string(highLimit), "+inf"});
+	vector<string> temp1(c1.reply());
+	for (int i=0; i< temp1.size(); i++)
+	{
+		files.push_back(RC.Redis_HGETALL(temp1[i]));
+	}
+
+	c.free();
+	c1.free();
+	rdx.disconnect();
+	return files;
+}
+
 
 /* Add file name and last time modified to a sorted list
 *
