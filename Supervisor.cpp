@@ -22,12 +22,14 @@ std::atomic_bool ready;
 
 // Process & thread related tasks
 void daemonize();
-void manageFiles(PolicyManager& pm, int time);
+void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
 void updatePolicies(PolicyManager& pm, int time);
 
+// Migration management functions
 bool orderFiles(FileData&, FileData&);
 void sortVector(vector<FileData>&);
 vector<FileData> getDemotionList(PolicyManager& pm);
+vector<FileData> getPromotionList(PolicyManager& pm);
 
 int main(int argc, char** argv)
 {
@@ -36,15 +38,20 @@ int main(int argc, char** argv)
     int migrationInterval = 24;
 
     // Create necessary classes
-    PolicyManager pm;
-    
+    PolicyManager pm;    
+    AWSConnector aws;
+
+    // Initialize AWSConnector
+    std::string region = "us-east-2";
+    aws.connect(region);
+
     // Spawn daemon
     daemonize();
 
     syslog (LOG_NOTICE, "Started the migration supervisor.");
     
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
-    std::thread filesT(manageFiles, std::ref(pm), migrationInterval);
+    std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
     while (true) {
         sleep(1);
@@ -65,30 +72,30 @@ void updatePolicies(PolicyManager& pm, int time) {
         ready = true; 
         sleep(time);
     }
-    /*
-    for (auto p : pm.getPolicyList()) {
-                syslog(LOG_NOTICE, p->type.c_str());
-            }
-    */
 }
 
-void manageFiles(PolicyManager& pm, int time) {
-    AWSConnector aws;
-    std::string region = "us-east-2";
-	std::string bucket = "devon-bucket";
-    aws.connect(region);
+void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
     
     while (true) {
         if (ready) {
+            // Demote files
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
             vector<FileData> demotionList = getDemotionList(pm);
             syslog(LOG_NOTICE, "Demoting the following files:");
             for (FileData fd: demotionList) {
                 syslog(LOG_NOTICE, fd.getName().c_str());
-                if (fd.isLocal) {
-                    aws.demoteObject(bucket, fd.location, fd.getName());
-                }
-            } 
+                aws.demoteObject("devon-bucket", fd.location, fd.getName());
+            }
+ 
+
+            // Promote files
+            syslog(LOG_NOTICE, "Querying database for promotion candidates.");
+            vector<FileData> promotionList = getPromotionList(pm);
+            syslog(LOG_NOTICE, "Promoting the following files:");
+            for (FileData fd: promotionList) {
+                syslog(LOG_NOTICE, fd.getName().c_str());
+                aws.promoteObject("devon-bucket", fd.getName(), fd.location);
+            }
             sleep(time);
         }
     }
@@ -156,6 +163,7 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     vector<FileData> inSizeRange;
     vector<FileData> inTimeRange;
     vector<FileData> inHitsRange;
+    vector<FileData> isLocal;
 
     
 
@@ -177,13 +185,12 @@ vector<FileData> getDemotionList(PolicyManager& pm)
             inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
         }
     } 
-   
+    // Grab all local files
+    isLocal = RS.getLocalFiles();
+
     sortVector(inSizeRange);
     sortVector(inTimeRange);
     sortVector(inHitsRange);
-
-    // Grab and sort all files that are local
-    vector<FileData> isLocal = RS.getLocalFiles();
     sortVector(isLocal); 
 
     set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp1), orderFiles);
@@ -198,41 +205,56 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     return demotionList;
 }
 
-/*
-vector<FileData> getPromotionList(PolicyList)
+
+vector<FileData> getPromotionList(PolicyManager& pm)
 {
     Redis_Scanner RS;
     vector<FileData> promotionList;
     vector<FileData> temp1;
     vector<FileData> temp2;
 
-    // Grab and sort all files outside of last modified time range
-    vector<FileData> inTimeRange = RS.getFilesInLastModifiedTime(TimePolicy);
-    sortVector(inTimeRange);
-    
-    // Grab and sort all files outside of times accessed range
-    vector<FileData> inHitsRange = RS.getFilesInTimesAccessedRange(HitPolicy);
-    sortVector(inHitsRange);
-    
+    vector<FileData> inSizeRange;
+    vector<FileData> inTimeRange;
+    vector<FileData> inHitsRange;
+    vector<FileData> isNonLocal;
+   
+    // TODO append instead of set
+    for (auto p : pm.getPolicyList())  {
+        // Grab and sort all files within file size policy range
+        if (p->type.compare("sizepolicy") == 0) {
+            SizePolicy* sp = (SizePolicy*) p;
+            //inSizeRange = RS.getFilesOutOfSizeRange(*sp);
+        }
+        // Grab and sort all files within last modified time range
+        else if (p->type.compare("timepolicy") == 0) {
+            TimePolicy* tp = (TimePolicy*) p;
+            inTimeRange = RS.getFilesOutOfLastModifiedTime(*tp);
+        }
+        // Grab and sort all files within times accessed range
+        else if (p->type.compare("hitspolicy") == 0) {
+            HitPolicy* hp = (HitPolicy*) p;
+            inHitsRange = RS.getFilesOutOfTimesAccessedRange(*hp);
+        }
+    } 
     // Grab and sort all files that are not local
-    vector<FileData> isLocal = RS.getLocalFiles();
-    sortVector(isLocal);
+    isNonLocal = RS.getNonLocalFiles();
+
+    sortVector(inSizeRange);
+    sortVector(inHitsRange);
+    sortVector(inTimeRange);
+    sortVector(isNonLocal);
     
-    set_intersection(inHitsRange.begin(), inHitsRange.end(), isLocal.begin(), isLocal.end(), back_inserter(temp1), orderFiles);
+    set_intersection(inHitsRange.begin(), inHitsRange.end(), isNonLocal.begin(), isNonLocal.end(), back_inserter(temp1), orderFiles);
     sortVector(temp1);
     
-    set_intersection(temp1.begin(), temp1.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(promotionList), orderFiles);
-    sortVector(promotionList);  
+    set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp2), orderFiles);
+    sortVector(temp2);  
     
-    cout << "Files to promote:\n";
-    for (int i=0; i<promotionList.size(); i++)
-    {
-        cout << promotionList[i].fileName << endl;
-    }
-     return promotionList;
-}
-*/
+    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(promotionList), orderFiles);
+    sortVector(promotionList); 
 
+    return promotionList;
+}
 
 void sortVector(vector<FileData>& files)
 {
