@@ -26,6 +26,9 @@ class Redis_Scanner
 {
 
 public:
+	static bool orderFiles(FileData&, FileData&);
+	void sortVector(vector<FileData>& files);
+
 	void addToFileSizeSet(FileData&);
 	vector<FileData> getFilesInSizeRange(SizePolicy);
 	vector<FileData> getFilesOutOfSizeRange(SizePolicy);
@@ -43,6 +46,8 @@ public:
 	void addToIsLocalList(FileData&);
 	vector<FileData> getLocalFiles();
 	vector<FileData> getNonLocalFiles();
+
+
 };
 
 #endif

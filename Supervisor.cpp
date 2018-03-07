@@ -26,8 +26,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
 void updatePolicies(PolicyManager& pm, int time);
 
 // Migration management functions
-bool orderFiles(FileData&, FileData&);
-void sortVector(vector<FileData>&);
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
 vector<FileData> getDemotionList(PolicyManager& pm);
 vector<FileData> getPromotionList(PolicyManager& pm);
 
@@ -157,8 +156,8 @@ vector<FileData> getDemotionList(PolicyManager& pm)
 {
     Redis_Scanner RS;
     vector<FileData> demotionList;
-    vector<FileData> temp1;
-    vector<FileData> temp2;
+    vector<FileData> intersection;
+    int i = 0;
 
     vector<FileData> inSizeRange;
     vector<FileData> inTimeRange;
@@ -187,20 +186,16 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     } 
     // Grab all local files
     isLocal = RS.getLocalFiles();
-
-    sortVector(inSizeRange);
-    sortVector(inTimeRange);
-    sortVector(inHitsRange);
-    sortVector(isLocal); 
-
-    set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp1), orderFiles);
-    sortVector(temp1);
     
-    set_intersection(inHitsRange.begin(), inHitsRange.end(), isLocal.begin(), isLocal.end(), back_inserter(temp2), orderFiles);
-    sortVector(temp2);
-    
-    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(demotionList), orderFiles);
-    sortVector(demotionList); 
+    // Find the intersection of the demotion policies
+    vector<vector<FileData>> fileLists = {isLocal, inSizeRange, inTimeRange, inHitsRange};
+    demotionList = findIntersection(fileLists, intersection, i);
+
+    cout << "Files to migrate:\n";
+    for (int i=0; i<demotionList.size(); i++)
+    {
+        cout << demotionList[i].fileName << endl;
+    }
 
     return demotionList;
 }
@@ -210,8 +205,8 @@ vector<FileData> getPromotionList(PolicyManager& pm)
 {
     Redis_Scanner RS;
     vector<FileData> promotionList;
-    vector<FileData> temp1;
-    vector<FileData> temp2;
+    vector<FileData> intersection;
+    int i = 0;
 
     vector<FileData> inSizeRange;
     vector<FileData> inTimeRange;
@@ -223,7 +218,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
         // Grab and sort all files within file size policy range
         if (p->type.compare("sizepolicy") == 0) {
             SizePolicy* sp = (SizePolicy*) p;
-            //inSizeRange = RS.getFilesOutOfSizeRange(*sp);
+            inSizeRange = RS.getFilesOutOfSizeRange(*sp);
         }
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
@@ -239,30 +234,53 @@ vector<FileData> getPromotionList(PolicyManager& pm)
     // Grab and sort all files that are not local
     isNonLocal = RS.getNonLocalFiles();
 
-    sortVector(inSizeRange);
-    sortVector(inHitsRange);
-    sortVector(inTimeRange);
-    sortVector(isNonLocal);
-    
-    set_intersection(inHitsRange.begin(), inHitsRange.end(), isNonLocal.begin(), isNonLocal.end(), back_inserter(temp1), orderFiles);
-    sortVector(temp1);
-    
-    set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp2), orderFiles);
-    sortVector(temp2);  
-    
-    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(promotionList), orderFiles);
-    sortVector(promotionList); 
+    // Find the intersection of the promotion policies
+    vector<vector<FileData>> fileLists = {isNonLocal, inSizeRange, inTimeRange, inHitsRange};
+    promotionList = findIntersection(fileLists, intersection, i);
 
     return promotionList;
 }
 
-void sortVector(vector<FileData>& files)
-{
-    sort (files.begin(), files.end(), orderFiles);
-}
 
-bool orderFiles(FileData& file1, FileData& file2)
-{
-    return (file1.location < file2.location);
-}
 
+/* Return a vector of files that match all of the migration policies
+*
+* @param vector<vector<FileData>> &fileLists
+*   A vector of vectors that contain files that match specified migration policies
+*
+* @param vector<FileData> &intersection
+*   The current intersection of FileData objects from the fileLists vector
+*
+* @param int &i
+*   A counter. Used to help go through fileLists recursively
+*
+* @return vector<FileData> intersection
+*   Contains the FileData objects that were in all of the fileLists vectors
+*/
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
+{
+    Redis_Scanner RS;
+    vector<FileData> temp;
+    if(i==0)
+    {
+        set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
+        RS.sortVector(temp);
+        i = 2;
+        cout << "BREAK 1\n";
+        intersection = findIntersection(fileLists, temp, i);
+    }
+
+    else
+    {
+        while(i < fileLists.size())
+        {
+            set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
+            RS.sortVector(temp);
+            i++;
+            cout << "BREAK 2\n";
+            intersection = findIntersection(fileLists, temp, i);
+        }
+    }
+    cout << "BREAK 3\n";
+    return intersection;
+}

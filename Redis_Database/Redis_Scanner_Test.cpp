@@ -15,7 +15,7 @@ using namespace std;
 
 
 
-
+/*
 bool orderFiles(FileData& file1, FileData& file2)
 {
 	return (file1.location < file2.location);
@@ -23,7 +23,36 @@ bool orderFiles(FileData& file1, FileData& file2)
 
 void sortVector(vector<FileData>& files)
 {
-    sort (files.begin(), files.end(), orderFiles);
+    sort(files.begin(), files.end(), orderFiles);
+}
+*/
+
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
+{
+	Redis_Scanner RS;
+	vector<FileData> temp;
+	if(i==0)
+	{
+		set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
+    	RS.sortVector(temp);
+    	i = 2;
+    	cout << "BREAK 1\n";
+    	intersection = findIntersection(fileLists, temp, i);
+   	}
+
+   	else
+   	{
+	   	while(i < fileLists.size())
+		{
+	    	set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
+	    	RS.sortVector(temp);
+	    	i++;
+	    	cout << "BREAK 2\n";
+	    	intersection = findIntersection(fileLists, temp, i);
+		}
+	}
+	cout << "BREAK 3\n";
+	return intersection;
 }
 
 
@@ -60,7 +89,7 @@ int main(int argc, char* argv[])
 	struct FileData File1 = {"/home/file1", "File1", 500, 120, static_cast<long int>(currentTime) - 865000, true};
 	struct FileData File2 = {"/home/file2", "File2", 260, 250, static_cast<long int>(currentTime) - 865000, true};
 	struct FileData File3 = {"/home/file3", "File3", 1024, 790, static_cast<long int>(currentTime), true};
-	struct FileData File4 = {"/home/file4", "File4", 780, 810, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File4 = {"/home/file4", "File4", 780, 700, static_cast<long int>(currentTime) - 865000, true};
 
 	// File sizes will be added to sorted set through this function
 	RC.Redis_HMSET(File1);
@@ -120,36 +149,30 @@ int main(int argc, char* argv[])
 		cout << temp22[i].fileName << endl;
 	}
 	
-	std::list<Policy> policyList;
-
-	policyList.push_back(SP);
-
-	policyList.push_back(HP);
-
-	policyList.push_back(TP);
-
 
 	vector<FileData> demotionList;
-    vector<vector<FileData>> vectorHolder;
-    vector<FileData> temp4;
+	vector<FileData> intersection;
+    int i = 0;
 
     // Grab and sort all files within file size policy range
     vector<FileData> temp1 = RS.getFilesInSizeRange(SP);
-    sortVector(temp1);
+    //sortVector(temp1);
 
     // Grab and sort all files within last modified time range
     vector<FileData> temp2 = RS.getFilesInLastModifiedTime(TP);
-    sortVector(temp2);
+    //sortVector(temp2);
 
     // Grab and sort all files within times accessed range
     vector<FileData> temp3 = RS.getFilesInTimesAccessedRange(HP);
-    sortVector(temp3);
+    //sortVector(temp3);
 
-    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(temp4), orderFiles);
-    sortVector(demotionList);
+    vector<FileData> temp4 = RS.getLocalFiles();
+    //sortVector(temp4);
 
-    set_intersection(temp3.begin(), temp3.end(), temp4.begin(), temp4.end(), back_inserter(demotionList), orderFiles);
-    sortVector(demotionList);
+    vector<vector<FileData>> fileLists = {temp1, temp2, temp3};
+
+
+    demotionList = findIntersection(fileLists, intersection, i);
 
 	cout << "Files to migrate:\n";
 	for (int i=0; i<demotionList.size(); i++)

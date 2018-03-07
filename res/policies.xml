@@ -8,7 +8,7 @@
 		
 	<policy type="timepolicy">
 		<name>MyTimePolicy</name>
-		<years>1</years>
+		<years>0</years>
 		<months>0</months>
 		<days>0</days>
 		<hours>0</hours>

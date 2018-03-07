@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <algorithm>
 #include "stdlib.h"
 
 #include "include/redox.hpp"
@@ -13,6 +14,18 @@ using namespace std;
 using redox::Redox;
 using redox::Command;
 using redox::Subscriber;
+
+bool Redis_Scanner::orderFiles(FileData& file1, FileData& file2)
+{
+	return (file1.location < file2.location);
+}
+
+void Redis_Scanner::sortVector(vector<FileData>& files)
+{
+	Redis_Scanner RS;
+    sort(files.begin(), files.end(), RS.orderFiles);
+}
+
 
 /* Add file name and file size to a sorted list
 *
@@ -64,6 +77,7 @@ vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
 	}
 	c.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
 
@@ -95,6 +109,7 @@ vector<FileData> Redis_Scanner::getFilesOutOfSizeRange(SizePolicy policy)
 	c.free();
 	c1.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
 
@@ -147,6 +162,7 @@ vector<FileData> Redis_Scanner::getFilesInLastModifiedTime(TimePolicy policy)
 	}
 	c.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
 
@@ -166,6 +182,7 @@ vector<FileData> Redis_Scanner::getFilesOutOfLastModifiedTime(TimePolicy policy)
 	}
 	c.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
 
@@ -209,6 +226,7 @@ vector<FileData> Redis_Scanner::getFilesInTimesAccessedRange(HitPolicy policy)
 	}
 	c.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
 
@@ -229,6 +247,7 @@ vector<FileData> Redis_Scanner::getFilesOutOfTimesAccessedRange(HitPolicy policy
 	}
 	c.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
 
@@ -264,6 +283,7 @@ vector<FileData> Redis_Scanner::getLocalFiles()
 	}
 	c.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
 
@@ -281,5 +301,6 @@ vector<FileData> Redis_Scanner::getNonLocalFiles()
 	}
 	c.free();
 	rdx.disconnect();
+	sortVector(files);
 	return files;
 }
