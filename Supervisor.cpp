@@ -82,8 +82,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             vector<FileData> demotionList = getDemotionList(pm);
             syslog(LOG_NOTICE, "Demoting the following files:");
             for (FileData fd: demotionList) {
-                syslog(LOG_NOTICE, fd.getName().c_str());
-                aws.demoteObject("devon-bucket", fd.location, fd.getName());
+                syslog(LOG_NOTICE, fd.getLocalURI().c_str());
+                aws.demoteObject("devon-bucket", fd.localURI, fd.getLocalURI());
             }
  
 
@@ -92,8 +92,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             vector<FileData> promotionList = getPromotionList(pm);
             syslog(LOG_NOTICE, "Promoting the following files:");
             for (FileData fd: promotionList) {
-                syslog(LOG_NOTICE, fd.getName().c_str());
-                aws.promoteObject("devon-bucket", fd.getName(), fd.location);
+                syslog(LOG_NOTICE, fd.getLocalURI().c_str());
+                aws.promoteObject("devon-bucket", fd.getLocalURI(), fd.localURI);
             }
             sleep(time);
         }
@@ -266,7 +266,6 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
         RS.sortVector(temp);
         i = 2;
-        cout << "BREAK 1\n";
         intersection = findIntersection(fileLists, temp, i);
     }
 
@@ -277,10 +276,8 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
             set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
             RS.sortVector(temp);
             i++;
-            cout << "BREAK 2\n";
             intersection = findIntersection(fileLists, temp, i);
         }
     }
-    cout << "BREAK 3\n";
     return intersection;
 }

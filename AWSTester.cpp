@@ -22,12 +22,12 @@ int main(int argc, char* argv[])
 
 	cout << "OBJECTS in devon-bucket\n";
 	for (auto &b: aws.listBucketContents("devon-bucket"))
-		cout << b.getName() << " (" << b.getFileSize() << ")" << endl;
+		cout << b.getLocalURI() << " (" << b.getFileSize() << ")" << endl;
 	cout << endl;
 
 	cout << "ALL OBJECTS\n";
 	for (auto &b: aws.listAllObjects())
-		cout << b.getName() << " (" << b.getFileSize() << ")" << endl;
+		cout << b.getLocalURI() << " (" << b.getFileSize() << ")" << endl;
 	cout << endl;
 	
 	for (int i = 0; i < argc; ++i) 

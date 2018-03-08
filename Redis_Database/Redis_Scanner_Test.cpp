@@ -15,18 +15,6 @@ using namespace std;
 
 
 
-/*
-bool orderFiles(FileData& file1, FileData& file2)
-{
-	return (file1.location < file2.location);
-}
-
-void sortVector(vector<FileData>& files)
-{
-    sort(files.begin(), files.end(), orderFiles);
-}
-*/
-
 vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
 {
 	Redis_Scanner RS;
@@ -36,7 +24,6 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
 		set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
     	RS.sortVector(temp);
     	i = 2;
-    	cout << "BREAK 1\n";
     	intersection = findIntersection(fileLists, temp, i);
    	}
 
@@ -47,11 +34,9 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
 	    	set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
 	    	RS.sortVector(temp);
 	    	i++;
-	    	cout << "BREAK 2\n";
 	    	intersection = findIntersection(fileLists, temp, i);
 		}
 	}
-	cout << "BREAK 3\n";
 	return intersection;
 }
 
@@ -86,10 +71,10 @@ int main(int argc, char* argv[])
 	time(&currentTime);
 	//currentTime = localtime(&t);
 
-	struct FileData File1 = {"/home/file1", "File1", 500, 120, static_cast<long int>(currentTime) - 865000, true};
-	struct FileData File2 = {"/home/file2", "File2", 260, 250, static_cast<long int>(currentTime) - 865000, true};
-	struct FileData File3 = {"/home/file3", "File3", 1024, 790, static_cast<long int>(currentTime), true};
-	struct FileData File4 = {"/home/file4", "File4", 780, 700, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File1 = {"/home/file1", "", "File1", 500, 120, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File2 = {"/home/file2", "", "File2", 260, 250, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File3 = {"/home/file3", "", "File3", 1024, 790, static_cast<long int>(currentTime), true};
+	struct FileData File4 = {"/home/file4", "", "File4", 780, 700, static_cast<long int>(currentTime) - 865000, true};
 
 	// File sizes will be added to sorted set through this function
 	RC.Redis_HMSET(File1);

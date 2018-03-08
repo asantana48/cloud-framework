@@ -18,7 +18,7 @@ void Redis_Client::Redis_HMSET(FileData& file)
 {	
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	Command<string>& c = rdx.commandSync<string>({"HMSET", file.location, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
+	Command<string>& c = rdx.commandSync<string>({"HMSET", file.localURI, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
 	if(c.ok()) {
 		cout << file.fileName << " successfully added to the database!\n";
 		Redis_Scanner RS;
@@ -45,7 +45,7 @@ FileData Redis_Client::Redis_HGETALL(string key)
 	vector<string> metaData = c.reply();
 
 	FileData file;
-	file.location = key;
+	file.localURI = key;
 	file.fileName = metaData[1];
 	file.fileSize = stoi(metaData[3]);
 	file.timesAccessed = stoi(metaData[5]);

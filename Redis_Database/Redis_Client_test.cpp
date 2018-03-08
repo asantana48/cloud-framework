@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 	
 	
 	FileData metaData = RC.Redis_HGETALL("/home/file1");
-	cout << "File location: " << metaData.location << endl;
+	cout << "File localURI: " << metaData.localURI << endl;
 	cout << "File name: " << metaData.fileName << endl;
 	cout << "File size: " << metaData.fileSize << endl;
 	cout << "Times accessed: " << metaData.timesAccessed << endl;

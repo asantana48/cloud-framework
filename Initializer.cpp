@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
         // Put stat into metadata object
         FileData fd;
         fd.fileName = name;
-        fd.location = full_path;
+        fd.localURI = full_path;
         fd.fileSize = statObj.st_size;
         fd.lastModified = statObj.st_atime;
         fd.timesAccessed = 0;

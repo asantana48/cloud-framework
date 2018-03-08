@@ -160,7 +160,7 @@ std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
         for (auto const &object : object_list)
         {
             FileData fd;
-            fd.location = "/" + bucket +  "/" + object.GetKey().c_str();
+            fd.localURI = "/" + bucket +  "/" + object.GetKey().c_str();
             fd.fileSize = object.GetSize();
             fd.isLocal = false;
             contents.push_back(fd);

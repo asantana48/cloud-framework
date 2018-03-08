@@ -7,12 +7,31 @@
 
 struct FileData
 {
-    std::string location;
+    std::string localURI;
+    std::string remoteURI;
     std::string fileName;
     int fileSize;
     int timesAccessed; // TODO add accessors
     time_t lastModified;
     bool isLocal;
+
+    void setLocalURI(std::string s){localURI = s;}
+
+    std::string getLocalURI()
+    {
+        std::stringstream s;
+        s << localURI.substr(localURI.find_last_of("/")+1);
+        return s.str();
+    }
+
+    void setRemoteURI(std::string s){remoteURI = s;}
+
+    std::string getRemoteURI()
+    {
+        std::stringstream s;
+        s << remoteURI.substr(remoteURI.find_last_of("/")+1);
+        return s.str();
+    }
 
     void setFileName(std::string s){
         fileName = s;
@@ -53,11 +72,13 @@ struct FileData
         return s.str();
     }
 
+    /*
     std::string getName() {
         std::stringstream s;
         s << location.substr(location.find_last_of("/")+1);
         return s.str();
     }
+    */
 
 };
 #endif

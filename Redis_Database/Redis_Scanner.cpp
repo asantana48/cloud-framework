@@ -17,7 +17,7 @@ using redox::Subscriber;
 
 bool Redis_Scanner::orderFiles(FileData& file1, FileData& file2)
 {
-	return (file1.location < file2.location);
+	return (file1.localURI < file2.localURI);
 }
 
 void Redis_Scanner::sortVector(vector<FileData>& files)
@@ -37,7 +37,7 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 
-	Command<int>& c = rdx.commandSync<int>({"ZADD", "File_Size", to_string(file.fileSize), file.location});
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "File_Size", to_string(file.fileSize), file.localURI});
 	if(c.reply() == 1)
 	{
 		cout << file.fileName << " successfully added to file size set!\n";
@@ -51,7 +51,7 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 }
 
 
-/* Return a vector of file locations with a file size between the 
+/* Return a vector of file localURIs with a file size between the 
 * lowLimit and the highLimit. The low and high limits are inclusive
 * values when comparing file size values.
 *
@@ -59,7 +59,7 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 *	Contains the high and low size thresholds
 *
 * @return vector<string> files
-*	Contains all of the file locations of files that fit the file size policy
+*	Contains all of the file localURIs of files that fit the file size policy
 */
 vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
 {
@@ -124,7 +124,7 @@ void Redis_Scanner::addToLastModifiedSet(FileData& file)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 
-	Command<int>& c = rdx.commandSync<int>({"ZADD", "Last_Modified", to_string(static_cast<long int>(file.lastModified)), file.location});
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "Last_Modified", to_string(static_cast<long int>(file.lastModified)), file.localURI});
 	if(c.reply() == 1)
 	{
 		cout << file.fileName << " successfully added to last modified set!\n";
@@ -138,13 +138,13 @@ void Redis_Scanner::addToLastModifiedSet(FileData& file)
 }
 
 
-/* Return a vector of file locations with a last modified time
+/* Return a vector of file localURIs with a last modified time
 * that is greater than the threshold time set in the TimePolicy file.
 *
 * @param TimePolicy policy
 *
 * @return vector<string> files
-*	Contains all of the file locations of files that fit the time policy
+*	Contains all of the file localURIs of files that fit the time policy
 */
 vector<FileData> Redis_Scanner::getFilesInLastModifiedTime(TimePolicy policy)
 {
@@ -196,7 +196,7 @@ void Redis_Scanner::addToHitList(FileData& file)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 
-	Command<int>& c = rdx.commandSync<int>({"ZADD", "Times_Accessed", to_string(file.timesAccessed), file.location});
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "Times_Accessed", to_string(file.timesAccessed), file.localURI});
 	if(c.reply() == 1)
 	{
 		cout << file.fileName << " successfully added to times accessed set!\n";
@@ -256,7 +256,7 @@ void Redis_Scanner::addToIsLocalList(FileData& file)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 
-	Command<int>& c = rdx.commandSync<int>({"ZADD", "Is_Local", to_string(file.isLocal), file.location});
+	Command<int>& c = rdx.commandSync<int>({"ZADD", "Is_Local", to_string(file.isLocal), file.localURI});
 	if(c.reply() == 1)
 	{
 		cout << file.fileName << " successfully added to is local set!\n";
