@@ -26,6 +26,9 @@ class Redis_Client
 
 	vector<string> Redis_List_All_Keys();
 
+	void setRemoteURI(string, string);
+	string getRemoteURI(string);
+
 	void setFileName(string, string);
 	string getFileName(string);
 

@@ -18,7 +18,7 @@ void Redis_Client::Redis_HMSET(FileData& file)
 {	
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	Command<string>& c = rdx.commandSync<string>({"HMSET", file.localURI, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
+	Command<string>& c = rdx.commandSync<string>({"HMSET", file.localURI, "Remote_URI", file.remoteURI, "File_Name", file.fileName, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal)});
 	if(c.ok()) {
 		cout << file.fileName << " successfully added to the database!\n";
 		Redis_Scanner RS;
@@ -69,6 +69,29 @@ vector<string> Redis_Client::Redis_List_All_Keys()
 	return c.reply();
 }
 
+void Redis_Client::setRemoteURI(string key, string remoteURI)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key,"Remote_URI", remoteURI});
+	c.free();
+	rdx.disconnect();
+	updateLastTimeModified(key);
+}
+
+
+string Redis_Client::getRemoteURI(string key)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Remote_URI"});
+	if(!c.ok()) {
+		cout << "Command has error code " << c.reply() << endl;
+	}
+	c.free();
+	rdx.disconnect();
+	return c.reply();
+}
 
 void Redis_Client::setFileName(string key, string fileName)
 {
