@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
         FileData fd;
         fd.fileName = name;
         fd.localURI = full_path;
+        fd.remoteURI = "";
         fd.fileSize = statObj.st_size;
         fd.lastModified = statObj.st_atime;
         fd.timesAccessed = 0;

@@ -15,6 +15,7 @@
 #include <syslog.h>
 #include <thread>
 #include <atomic>
+#include <string>
 
 
 using namespace std;
@@ -29,6 +30,22 @@ void updatePolicies(PolicyManager& pm, int time);
 vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
 vector<FileData> getDemotionList(PolicyManager& pm);
 vector<FileData> getPromotionList(PolicyManager& pm);
+
+// Bucket that we'll be using
+const std::string BUCKET = "devon-bucket";
+
+
+bool orderFiles(FileData& file1, FileData& file2)
+{
+    return (file1.localURI < file2.localURI);
+}
+
+void sortVector(vector<FileData>& files)
+{
+    sort (files.begin(), files.end(), orderFiles);
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -74,7 +91,7 @@ void updatePolicies(PolicyManager& pm, int time) {
 }
 
 void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
-    
+    Redis_Client RC;
     while (true) {
         if (ready) {
             // Demote files
@@ -83,7 +100,14 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             syslog(LOG_NOTICE, "Demoting the following files:");
             for (FileData fd: demotionList) {
                 syslog(LOG_NOTICE, fd.getLocalURI().c_str());
-                aws.demoteObject("devon-bucket", fd.localURI, fd.getLocalURI());
+                if (fd.remoteURI == "") {
+                    aws.demoteObject(BUCKET, fd.localURI, fd.fileName);
+                    //RC.setRemoteURI(fd.fileName, "AWS/" + BUCKET + "/" + fd.fileName);
+                    //RC.setIsLocal(fd.fileName, false);
+                }
+                else  {
+                    aws.demoteObject(BUCKET, fd.getRemoteURI(), fd.localURI);
+                }
             }
  
 
@@ -93,7 +117,9 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             syslog(LOG_NOTICE, "Promoting the following files:");
             for (FileData fd: promotionList) {
                 syslog(LOG_NOTICE, fd.getLocalURI().c_str());
-                aws.promoteObject("devon-bucket", fd.getLocalURI(), fd.localURI);
+                aws.promoteObject(BUCKET, fd.getLocalURI(), fd.localURI);
+                RC.setRemoteURI(fd.fileName, "");
+                RC.setIsLocal(fd.fileName, true);
             }
             sleep(time);
         }
@@ -154,7 +180,7 @@ void daemonize()
 
 vector<FileData> getDemotionList(PolicyManager& pm)
 {
-    Redis_Scanner RS;
+    /*Redis_Scanner RS;
     vector<FileData> demotionList;
     vector<FileData> intersection;
     int i = 0;
@@ -196,6 +222,54 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     {
         cout << demotionList[i].fileName << endl;
     }
+
+    return demotionList;*/
+    Redis_Scanner RS;
+    vector<FileData> demotionList;
+    vector<FileData> temp1;
+    vector<FileData> temp2;
+
+    vector<FileData> inSizeRange;
+    vector<FileData> inTimeRange;
+    vector<FileData> inHitsRange;
+    vector<FileData> isLocal;
+
+    
+
+    // TODO append instead of set
+    for (auto p : pm.getPolicyList())  {
+        // Grab and sort all files within file size policy range
+        if (p->type.compare("sizepolicy") == 0) {
+            SizePolicy* sp = (SizePolicy*) p;
+            inSizeRange = RS.getFilesInSizeRange(*sp);
+        }
+        // Grab and sort all files within last modified time range
+        else if (p->type.compare("timepolicy") == 0) {
+            TimePolicy* tp = (TimePolicy*) p;
+            inTimeRange = RS.getFilesInLastModifiedTime(*tp);
+        }
+        // Grab and sort all files within times accessed range
+        else if (p->type.compare("hitspolicy") == 0) {
+            HitPolicy* hp = (HitPolicy*) p;
+            inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
+        }
+    } 
+    // Grab all local files
+    isLocal = RS.getLocalFiles();
+
+    sortVector(inSizeRange);
+    sortVector(inTimeRange);
+    sortVector(inHitsRange);
+    sortVector(isLocal); 
+
+    set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp1), orderFiles);
+    sortVector(temp1);
+    
+    set_intersection(inHitsRange.begin(), inHitsRange.end(), isLocal.begin(), isLocal.end(), back_inserter(temp2), orderFiles);
+    sortVector(temp2);
+    
+    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(demotionList), orderFiles);
+    sortVector(demotionList); 
 
     return demotionList;
 }
