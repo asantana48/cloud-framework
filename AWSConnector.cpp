@@ -143,9 +143,9 @@ std::list<std::string> AWSConnector::listBuckets()
     return contents;
 }
 
-std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
+std::list<std::string> AWSConnector::listBucketContents(std::string bucket)
 {
-    std::list<FileData> contents;
+    std::list<std::string> contents;
     
     Aws::S3::Model::ListObjectsRequest req;
     req.WithBucket(bucket.c_str());
@@ -158,13 +158,7 @@ std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
             outcome.GetResult().GetContents();
         
         for (auto const &object : object_list)
-        {
-            FileData fd;
-            fd.localURI = "/" + bucket +  "/" + object.GetKey().c_str();
-            fd.fileSize = object.GetSize();
-            fd.isLocal = false;
-            contents.push_back(fd);
-        }
+            contents.push_back(object.GetKey().c_str());
     }
     else
     {
@@ -175,11 +169,11 @@ std::list<FileData> AWSConnector::listBucketContents(std::string bucket)
     return contents;
 }
 
-std::list<FileData> AWSConnector::listAllObjects() {
+/*std::list<FileData> AWSConnector::listAllObjects() {
     std::list<FileData> contents;
 
     for (auto bucket: listBuckets()) 
         contents.splice(contents.end(), listBucketContents(bucket));
 
     return contents;
-}
+}*/

@@ -48,8 +48,8 @@ public:
 	
 	// Information retrieval functions
 	std::list<std::string> listBuckets();
-	std::list<FileData> listBucketContents(std::string bucket);
-	std::list<FileData> listAllObjects();
+	std::list<std::string> listBucketContents(std::string bucket);
+	// std::list<string> listAllObjects();
 };
 #endif
 

@@ -13,10 +13,10 @@ int main(int argc, char* argv[])
 
     AWSConnector aws;
     aws.connect(region);
-    for (FileData fd : aws.listAllObjects()) {
-        cout << "Recalling " << fd.getLocalURI() << "\n";
-        std::string path = FILES_PATH + fd.getLocalURI();
-        aws.promoteObject("devon-bucket", fd.getLocalURI(), path);
+    for (std::string filename: aws.listBucketContents(bucket)) {
+        cout << "Recalling " << filename << "\n";
+        std::string localPath = FILES_PATH + filename;
+        aws.promoteObject("devon-bucket", filename, localPath);
     }
 	return 0;
 }
