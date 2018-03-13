@@ -26,7 +26,6 @@ Run recall to restore migrated files (./recall)
 NOTE that you should probably stop the supervise daemon before doing this.
 
 ### Reading the log
-journalctl /home/andres/Projects/cloud-framework/supervise 
-
+journalctl -f
 
 
