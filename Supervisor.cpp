@@ -66,6 +66,7 @@ int main(int argc, char** argv)
 
     syslog (LOG_NOTICE, "Started the migration supervisor.");
     
+    ready = false;
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
     std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
@@ -101,86 +102,23 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             for (FileData fd: demotionList) {
                 syslog(LOG_NOTICE, fd.getLocalURI().c_str());
                 if (fd.remoteURI == "") {
-                    aws.demoteObject(BUCKET, fd.localURI, fd.fileName);
-                    //RC.setRemoteURI(fd.fileName, "AWS/" + BUCKET + "/" + fd.fileName);
-                    //RC.setIsLocal(fd.fileName, false);
+                    aws.demoteObject(BUCKET, fd.localURI, fd.getLocalURI());
+                    RC.setRemoteURI(fd.fileName, "AWS/" + BUCKET + "/" + fd.fileName);
+                    RC.setIsLocal(fd.fileName, false);
                 }
                 else  {
                     aws.demoteObject(BUCKET, fd.getRemoteURI(), fd.localURI);
                 }
-            }
- 
-
-            // Promote files
-            syslog(LOG_NOTICE, "Querying database for promotion candidates.");
-            vector<FileData> promotionList = getPromotionList(pm);
-            syslog(LOG_NOTICE, "Promoting the following files:");
-            for (FileData fd: promotionList) {
-                syslog(LOG_NOTICE, fd.getLocalURI().c_str());
-                aws.promoteObject(BUCKET, fd.getLocalURI(), fd.localURI);
-                RC.setRemoteURI(fd.fileName, "");
-                RC.setIsLocal(fd.fileName, true);
             }
             sleep(time);
         }
     }
 }
 
-void daemonize()
-{
-    pid_t pid;
-
-    // Fork off the parent process 
-    pid = fork();
-
-    // Have parent end itself 
-    if (pid != 0) 
-    {
-        if (pid < 0)
-            exit(EXIT_FAILURE);
-        else if (pid > 0)
-            exit(EXIT_SUCCESS);
-    }
-
-    // Set child as session leader
-    if (setsid() < 0)
-        exit(EXIT_FAILURE);
-
-    // Set signals to ignore
-    signal(SIGCHLD, SIG_IGN);
-    signal(SIGHUP, SIG_IGN);
-
-    // Fork off again to finalize the daemon process
-    pid = fork();
-
-    // Have parent end itself 
-    if (pid != 0) 
-    {
-        if (pid < 0)
-            exit(EXIT_FAILURE);
-        if (pid > 0)
-            exit(EXIT_SUCCESS);
-    }
-
-    // Set permission of newly created/migrated files to default
-    umask(022);
-
-    // Change directory to testbed directory 
-    chdir(FILES_PATH.c_str());
-
-    // Close all open file descriptors
-    for (int x = sysconf(_SC_OPEN_MAX); x>=0; x--)
-        close (x);
-
-    // Open a log file
-    openlog ("supervisor", LOG_PID, LOG_DAEMON);
-}
-
-
 
 vector<FileData> getDemotionList(PolicyManager& pm)
 {
-    /*Redis_Scanner RS;
+    Redis_Scanner RS;
     vector<FileData> demotionList;
     vector<FileData> intersection;
     int i = 0;
@@ -222,54 +160,6 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     {
         cout << demotionList[i].fileName << endl;
     }
-
-    return demotionList;*/
-    Redis_Scanner RS;
-    vector<FileData> demotionList;
-    vector<FileData> temp1;
-    vector<FileData> temp2;
-
-    vector<FileData> inSizeRange;
-    vector<FileData> inTimeRange;
-    vector<FileData> inHitsRange;
-    vector<FileData> isLocal;
-
-    
-
-    // TODO append instead of set
-    for (auto p : pm.getPolicyList())  {
-        // Grab and sort all files within file size policy range
-        if (p->type.compare("sizepolicy") == 0) {
-            SizePolicy* sp = (SizePolicy*) p;
-            inSizeRange = RS.getFilesInSizeRange(*sp);
-        }
-        // Grab and sort all files within last modified time range
-        else if (p->type.compare("timepolicy") == 0) {
-            TimePolicy* tp = (TimePolicy*) p;
-            inTimeRange = RS.getFilesInLastModifiedTime(*tp);
-        }
-        // Grab and sort all files within times accessed range
-        else if (p->type.compare("hitspolicy") == 0) {
-            HitPolicy* hp = (HitPolicy*) p;
-            inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
-        }
-    } 
-    // Grab all local files
-    isLocal = RS.getLocalFiles();
-
-    sortVector(inSizeRange);
-    sortVector(inTimeRange);
-    sortVector(inHitsRange);
-    sortVector(isLocal); 
-
-    set_intersection(inSizeRange.begin(), inSizeRange.end(), inTimeRange.begin(), inTimeRange.end(), back_inserter(temp1), orderFiles);
-    sortVector(temp1);
-    
-    set_intersection(inHitsRange.begin(), inHitsRange.end(), isLocal.begin(), isLocal.end(), back_inserter(temp2), orderFiles);
-    sortVector(temp2);
-    
-    set_intersection(temp1.begin(), temp1.end(), temp2.begin(), temp2.end(), back_inserter(demotionList), orderFiles);
-    sortVector(demotionList); 
 
     return demotionList;
 }
@@ -354,4 +244,54 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         }
     }
     return intersection;
+}
+
+void daemonize()
+{
+    pid_t pid;
+
+    // Fork off the parent process 
+    pid = fork();
+
+    // Have parent end itself 
+    if (pid != 0) 
+    {
+        if (pid < 0)
+            exit(EXIT_FAILURE);
+        else if (pid > 0)
+            exit(EXIT_SUCCESS);
+    }
+
+    // Set child as session leader
+    if (setsid() < 0)
+        exit(EXIT_FAILURE);
+
+    // Set signals to ignore
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    // Fork off again to finalize the daemon process
+    pid = fork();
+
+    // Have parent end itself 
+    if (pid != 0) 
+    {
+        if (pid < 0)
+            exit(EXIT_FAILURE);
+        if (pid > 0)
+            exit(EXIT_SUCCESS);
+    }
+
+    // Set permission of newly created/migrated files to default
+    umask(022);
+
+    // Change directory to testbed directory 
+    chdir(FILES_PATH.c_str());
+
+    // Close all open file descriptors
+    for (int x = sysconf(_SC_OPEN_MAX); x>=0; x--)
+        close (x);
+
+    // Open a log file
+    openlog ("supervisor", LOG_PID, LOG_DAEMON);
 }

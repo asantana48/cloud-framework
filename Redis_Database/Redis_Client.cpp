@@ -46,11 +46,12 @@ FileData Redis_Client::Redis_HGETALL(string key)
 
 	FileData file;
 	file.localURI = key;
-	file.fileName = metaData[1];
-	file.fileSize = stoi(metaData[3]);
-	file.timesAccessed = stoi(metaData[5]);
-	file.lastModified = stringToTime_t(metaData[7]);
-	file.isLocal = stoi(metaData[9]);
+	file.remoteURI = metaData[1];
+	file.fileName = metaData[3];
+	file.fileSize = stoi(metaData[5]);
+	file.timesAccessed = stoi(metaData[7]);
+	file.lastModified = stringToTime_t(metaData[9]);
+	file.isLocal = stoi(metaData[11]);
 
 	c.free();
 	rdx.disconnect();
