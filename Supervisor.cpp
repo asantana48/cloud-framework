@@ -100,14 +100,14 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             vector<FileData> demotionList = getDemotionList(pm);
             syslog(LOG_NOTICE, "Demoting the following files:");
             for (FileData fd: demotionList) {
-                syslog(LOG_NOTICE, fd.getLocalURI().c_str());
+                syslog(LOG_NOTICE, fd.fileName.c_str());
                 if (fd.remoteURI == "") {
-                    aws.demoteObject(BUCKET, fd.localURI, fd.getLocalURI());
-                    RC.setRemoteURI(fd.fileName, "AWS/" + BUCKET + "/" + fd.fileName);
-                    RC.setIsLocal(fd.fileName, false);
+                    /*aws.demoteObject(BUCKET, fd.localURI, fd.getLocalURI());
+                    RC.setRemoteURI(fd.localURI, "AWS/" + BUCKET + "/" + fd.getLocalURI());
+                    RC.setIsLocal(fd.localURI, false);*/
                 }
                 else  {
-                    aws.demoteObject(BUCKET, fd.getRemoteURI(), fd.localURI);
+                    //aws.demoteObject(BUCKET, fd.remoteURI, fd.localURI);
                 }
             }
             sleep(time);

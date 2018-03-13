@@ -8,49 +8,13 @@
 struct FileData
 {
     std::string localURI;
-    std::string remoteURI;
     std::string fileName;
+    std::string remoteURI; // TODO make it more relevant - i.e. contain cloud, bucket info
+
     int fileSize;
-    int timesAccessed; // TODO add accessors
+    int timesAccessed; 
     time_t lastModified;
     bool isLocal;
-
-    void setLocalURI(std::string s){localURI = s;}
-
-    std::string getLocalURI()
-    {
-        std::stringstream s;
-        s << localURI.substr(localURI.find_last_of("/")+1);
-        return s.str();
-    }
-
-    void setRemoteURI(std::string s){remoteURI = s;}
-
-    std::string getRemoteURI()
-    {
-        std::stringstream s;
-        s << remoteURI.substr(remoteURI.find_last_of("/")+1);
-        return s.str();
-    }
-
-    void setFileName(std::string s){
-        fileName = s;
-    }
-
-    void setFileSize(std::string s) {
-        fileSize = stoi(s);
-    }
-
-    void setLastModified(std::string s) {
-        struct time_tm;
-    }
-
-    void setIsLocal(std::string s) {
-        if (s.compare("true") == 0)
-            isLocal = true;
-        else if (s.compare("false") == 0)
-            isLocal = false;
-    }
 
 	std::string getFileSize()
 	{
@@ -59,6 +23,12 @@ struct FileData
 		return s.str();
 	}
 
+    std::string getTimesAccessed()
+	{
+        std::stringstream s;
+		s << timesAccessed;
+		return s.str();
+	} 
     std::string getLastModified()
 	{
         std::stringstream s;
@@ -71,14 +41,5 @@ struct FileData
         s << isLocal;
         return s.str();
     }
-
-    /*
-    std::string getName() {
-        std::stringstream s;
-        s << location.substr(location.find_last_of("/")+1);
-        return s.str();
-    }
-    */
-
 };
 #endif
