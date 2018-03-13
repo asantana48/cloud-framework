@@ -3,7 +3,7 @@
 	<policy type="sizepolicy">
 		<name>size</name>
 		<lowerbound>52</lowerbound>
-		<upperbound>21971520</upperbound>
+		<upperbound>5242881</upperbound>
 	</policy>
 		
 	<policy type="timepolicy">

@@ -34,19 +34,6 @@ vector<FileData> getPromotionList(PolicyManager& pm);
 // Bucket that we'll be using
 const std::string BUCKET = "devon-bucket";
 
-
-bool orderFiles(FileData& file1, FileData& file2)
-{
-    return (file1.localURI < file2.localURI);
-}
-
-void sortVector(vector<FileData>& files)
-{
-    sort (files.begin(), files.end(), orderFiles);
-}
-
-
-
 int main(int argc, char** argv)
 {
     // Intervals for various tasks
@@ -102,13 +89,13 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             for (FileData fd: demotionList) {
                 syslog(LOG_NOTICE, fd.fileName.c_str());
                 if (fd.remoteURI == "") {
-                    /*aws.demoteObject(BUCKET, fd.localURI, fd.getLocalURI());
-                    RC.setRemoteURI(fd.localURI, "AWS/" + BUCKET + "/" + fd.getLocalURI());
-                    RC.setIsLocal(fd.localURI, false);*/
+                    aws.demoteObject(BUCKET, fd.localURI, fd.fileName);
+                    RC.setRemoteURI(fd.localURI, fd.fileName);
                 }
                 else  {
-                    //aws.demoteObject(BUCKET, fd.remoteURI, fd.localURI);
+                    aws.demoteObject(BUCKET, fd.remoteURI, fd.localURI);
                 }
+                RC.setIsLocal(fd.localURI, false);
             }
             sleep(time);
         }
@@ -150,6 +137,11 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     } 
     // Grab all local files
     isLocal = RS.getLocalFiles();
+    for (FileData fd: isLocal) {
+        string local = "Local file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    
     
     // Find the intersection of the demotion policies
     vector<vector<FileData>> fileLists = {isLocal, inSizeRange, inTimeRange, inHitsRange};
