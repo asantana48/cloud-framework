@@ -251,6 +251,7 @@ vector<FileData> Redis_Scanner::getFilesOutOfTimesAccessedRange(HitPolicy policy
 	return files;
 }
 
+
 void Redis_Scanner::addToIsLocalList(FileData& file)
 {
 	Redox rdx;
@@ -268,6 +269,35 @@ void Redis_Scanner::addToIsLocalList(FileData& file)
 	c.free();
 	rdx.disconnect();
 }
+
+
+void Redis_Scanner::changeLocalToNonLocal(FileData& file)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+
+	Command<int>& c = rdx.commandSync<int>({"ZREM", "Is_Local", file.localURI});
+	Redis_Client RC;
+	RC.setIsLocal(file.localURI, false);
+	addToIsLocalList(file);
+	c.free();
+	rdx.disconnect();
+}
+
+
+void Redis_Scanner::changeNonLocalToLocal(FileData& file)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+
+	Command<int>& c = rdx.commandSync<int>({"ZREM", "Is_Local", file.localURI});
+	Redis_Client RC;
+	RC.setIsLocal(file.localURI, true);
+	addToIsLocalList(file);
+	c.free();
+	rdx.disconnect();
+}
+
 
 vector<FileData> Redis_Scanner::getLocalFiles()
 {

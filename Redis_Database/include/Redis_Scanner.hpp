@@ -44,6 +44,8 @@ public:
 
 
 	void addToIsLocalList(FileData&);
+	void changeLocalToNonLocal(FileData&);
+	void changeNonLocalToLocal(FileData&);
 	vector<FileData> getLocalFiles();
 	vector<FileData> getNonLocalFiles();
 
