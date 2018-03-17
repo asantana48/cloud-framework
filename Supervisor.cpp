@@ -36,6 +36,7 @@ const std::string BUCKET = "devon-bucket";
 
 int main(int argc, char** argv)
 {
+    
     // Intervals for various tasks
     int policyInterval = 8;
     int migrationInterval = 24;
