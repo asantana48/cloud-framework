@@ -38,8 +38,8 @@ int main(int argc, char** argv)
 {
     
     // Intervals for various tasks
-    int policyInterval = 8;
-    int migrationInterval = 24;
+    int policyInterval = 10;
+    int migrationInterval = 30;
 
     // Create necessary classes
     PolicyManager pm;    
@@ -58,6 +58,7 @@ int main(int argc, char** argv)
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
     std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
+
     while (true) {
         sleep(1);
     }
@@ -75,12 +76,14 @@ void updatePolicies(PolicyManager& pm, int time) {
         
         syslog(LOG_NOTICE, resp.c_str());
         ready = true; 
+        
         sleep(time);
     }
 }
 
 void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
     Redis_Client RC;
+    Redis_Scanner RS;
     while (true) {
         if (ready) {
             // Demote files
@@ -90,13 +93,29 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             for (FileData fd: demotionList) {
                 syslog(LOG_NOTICE, fd.fileName.c_str());
                 if (fd.remoteURI == "") {
-                    aws.demoteObject(BUCKET, fd.localURI, fd.fileName);
-                    RC.setRemoteURI(fd.localURI, fd.fileName);
+                    RC.setRemoteURI(fd.localURI, fd.fileName);       
                 }
-                else  {
-                    aws.demoteObject(BUCKET, fd.remoteURI, fd.localURI);
-                }
+                
+                // Demotion
+                aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
+
                 RC.setIsLocal(fd.localURI, false);
+                RS.changeLocalToNonLocal(fd);
+            }
+            // Promote files
+            syslog(LOG_NOTICE, "Querying database for promotion candidates.");
+            vector<FileData> promotionList = getPromotionList(pm);
+            syslog(LOG_NOTICE, "Promoting the following files:");
+            for (FileData fd: promotionList) {
+                syslog(LOG_NOTICE, fd.fileName.c_str());
+
+                // Promotion
+                aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);
+
+                // Update the database
+                RC.setRemoteURI(fd.localURI, "");
+                RC.setIsLocal(fd.localURI, true);
+                RS.changeNonLocalToLocal(fd);
             }
             sleep(time);
         }
@@ -148,10 +167,10 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     vector<vector<FileData>> fileLists = {isLocal, inSizeRange, inTimeRange, inHitsRange};
     demotionList = findIntersection(fileLists, intersection, i);
 
-    cout << "Files to migrate:\n";
+    // Print files to demote
     for (int i=0; i<demotionList.size(); i++)
     {
-        cout << demotionList[i].fileName << endl;
+        syslog(LOG_NOTICE, demotionList[i].fileName.c_str());
     }
 
     return demotionList;
@@ -190,11 +209,33 @@ vector<FileData> getPromotionList(PolicyManager& pm)
     } 
     // Grab and sort all files that are not local
     isNonLocal = RS.getNonLocalFiles();
+    
+    for (FileData fd: inSizeRange) {
+        string local = "Size file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    for (FileData fd: inTimeRange) {
+        string local = "Time file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    for (FileData fd: inHitsRange) {
+        string local = "Hits file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    for (FileData fd: isNonLocal) {
+        string local = "Remote file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
 
     // Find the intersection of the promotion policies
     vector<vector<FileData>> fileLists = {isNonLocal, inSizeRange, inTimeRange, inHitsRange};
     promotionList = findIntersection(fileLists, intersection, i);
 
+    // Print files to promote
+    for (int i=0; i<promotionList.size(); i++)
+    {
+        syslog(LOG_NOTICE, promotionList[i].fileName.c_str());
+    }
     return promotionList;
 }
 
