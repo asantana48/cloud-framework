@@ -30,10 +30,8 @@ private:
 public:
     PolicyManager() {}
     ~PolicyManager();
-
-    //void addPolicy(Policy* p);
+    
     void clear();
-	//std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
     
     std::string parsePoliciesFromXMLFile(std::string filename);
 

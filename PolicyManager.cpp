@@ -5,11 +5,10 @@
 
 PolicyManager::~PolicyManager()
 {
-    /*auto it = policyList.begin();
-    while (it != policyList.end()) {
-        delete *it;
-        it = policyList.erase(it);
-    }*/
+	this->clear();
+}
+
+void PolicyManager::clear() {
 	auto outer = policyList.begin();
     while (outer != policyList.end()) {
         auto inner = outer->begin();
@@ -20,42 +19,6 @@ PolicyManager::~PolicyManager()
 		outer++;
     }
 }
-
-/*void PolicyManager::addPolicy(Policy* p)
-{
-    policyList.push_back(p);
-}*/
-
-void PolicyManager::clear() {
-	/*auto it = policyList.begin();
-    while (it != policyList.end()) {
-        delete *it;
-        it = policyList.erase(it);
-    }*/
-}
-
-/*std::list<FileData> PolicyManager::getFileDemotionList(std::list<FileData> fileList)
-{
-	std::list<FileData> migrationList;
-
-	auto policyIt = policyList.begin();
-	auto fileIt = fileList.begin();
-	
-	// Run through all policies for every file
-	for (auto fileIt = fileList.begin(); fileIt != fileList.end(); ++fileIt) {
-		bool needsMigrated = true;
-		for (auto policyIt = policyList.begin(); policyIt != policyList.end(); ++policyIt) {
-			if ((*policyIt)->isFileKept(*fileIt)) {
-				needsMigrated = false;
-				break;
-			}
-		}
-		if (needsMigrated)
-			migrationList.push_back(*fileIt);
-	}
-
-	return migrationList;
-}*/
 
 Policy* PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
@@ -72,19 +35,16 @@ Policy* PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			printf("name: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"lowerbound"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			printf("lower bound: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"upperbound"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			printf("upper bound: %s\n", key);
 		}
 		cur = cur->next;
 	}
@@ -108,13 +68,11 @@ Policy* PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			printf("name: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"minimumhits"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			printf("minimum hits required to retain file: %s\n", key);
 		}
 		cur = cur->next;
 	}
@@ -139,7 +97,6 @@ Policy* PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			printf("name: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"years"))
@@ -182,8 +139,6 @@ Policy* PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		cur = cur->next;
 	}
 
-	printf("Total seconds: %d\n", totalTimeInSeconds);
-
 	timePolicy = new TimePolicy(totalTimeInSeconds);
 	timePolicy->name = name;
 	timePolicy->type = "timepolicy";
@@ -200,17 +155,14 @@ Policy* PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	policyType = xmlGetProp(cur, (const xmlChar *)"type");
 	if (!xmlStrcmp(policyType, (const xmlChar *)"sizepolicy"))
 	{
-		printf("Size policy Found!\n");
 		policy = parseSizePolicy(doc, cur);
 	}
 	else if (!xmlStrcmp(policyType, (const xmlChar *)"hitspolicy"))
 	{
-		printf("Hits policy Found!\n");
 		policy = parseHitsPolicy(doc, cur);
 	}
 	else if (!xmlStrcmp(policyType, (const xmlChar *)"timepolicy"))
 	{
-		printf("Time policy Found!\n");
 		policy = parseTimePolicy(doc, cur);
 	}
 	return policy;
@@ -251,7 +203,6 @@ std::string PolicyManager::streamFile(const char* filename) {
 		//if there is a match, calls function parsePolicyList
 		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policylist")))
 		{
-			fprintf(stderr, "\nPolicy list found:\n");
 			parsePolicyList(doc, cur);
 		}
 		cur = cur->next;
