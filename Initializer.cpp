@@ -3,11 +3,14 @@
 #include "lib/FileData.hpp"
 #include "lib/FileUtils.hpp"
 #include "lib/Constants.hpp"
+#include "lib/FileEventHandler.hpp"
 #include "Redis_Database/include/Redis_Client.hpp"
+
 
 //#include <libxml/xmlreader.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/inotify.h>
 #include <fcntl.h>
 #include <iostream>
 #include <vector>
@@ -18,7 +21,9 @@ using namespace std;
 int main(int argc, char* argv[]) {
     // Initialize the database
     list<string> filenames = FileUtils::List(FILES_PATH.c_str());
+    vector<int> fileDescriptors;
     Redis_Client RC;
+    FileEventHandler FEH;
     struct stat statObj;
 
     for (string name: filenames) {
@@ -38,7 +43,9 @@ int main(int argc, char* argv[]) {
 
         // Put info in db
         RC.Redis_HMSET(fd);
+        FEH.initializeINotify(fd);
     }
 
+    FEH.test();
     return 0;
 }
