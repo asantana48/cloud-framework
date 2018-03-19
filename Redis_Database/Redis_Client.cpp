@@ -144,9 +144,8 @@ int Redis_Client::getFileSize(string key)
 }
 
 
-void Redis_Client::incrementTimesAccessed(FileData& file)
+void Redis_Client::incrementTimesAccessed(string key)
 {
-	string key = file.localURI;
 	int times_accessed = getTimesAccessed(key);
 	times_accessed += 1;
 	Redox rdx;

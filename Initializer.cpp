@@ -43,9 +43,9 @@ int main(int argc, char* argv[]) {
 
         // Put info in db
         RC.Redis_HMSET(fd);
-        FEH.initializeINotify(fd);
     }
 
-    FEH.test();
+    // Start the event handler on the testbed directory
+    FEH.initializeINotify();
     return 0;
 }

@@ -16,11 +16,7 @@ class FileEventHandler
 {
 
 public:
-	void initializeINotify(FileData&);
-	//void startEventWatcher(int&);
-
-	void test();
-
+	void initializeINotify();
 };
 
 #endif

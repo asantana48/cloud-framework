@@ -35,7 +35,7 @@ class Redis_Client
 	void setFileSize(string, int);
 	int getFileSize(string);
 
-	void incrementTimesAccessed(FileData&);
+	void incrementTimesAccessed(string);
 	int getTimesAccessed(string);
 
 	void setIsLocal(string, bool);
