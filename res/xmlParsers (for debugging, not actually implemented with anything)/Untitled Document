@@ -1,1 +1,0 @@
-g++ parser.cpp -I/usr/include/libxml2 -lxml2 -lm
