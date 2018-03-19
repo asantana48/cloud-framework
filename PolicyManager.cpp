@@ -5,36 +5,36 @@
 
 PolicyManager::~PolicyManager()
 {
-    auto it = policyList.begin();
+    /*auto it = policyList.begin();
     while (it != policyList.end()) {
         delete *it;
         it = policyList.erase(it);
+    }*/
+	auto outer = policyList.begin();
+    while (outer != policyList.end()) {
+        auto inner = outer->begin();
+		while (inner != outer->end()) {
+			delete *inner;
+			inner = outer->erase(inner);
+		}
+		outer++;
     }
 }
 
-void PolicyManager::addPolicy(Policy* p)
+/*void PolicyManager::addPolicy(Policy* p)
 {
     policyList.push_back(p);
-}
+}*/
 
 void PolicyManager::clear() {
-	auto it = policyList.begin();
+	/*auto it = policyList.begin();
     while (it != policyList.end()) {
         delete *it;
         it = policyList.erase(it);
-    }
+    }*/
 }
 
-bool PolicyManager::isFilePromoted(FileData fd)
-{
-    for (auto it = policyList.begin(); it != policyList.end(); ++it) {
-
-    }
-
-	return false;
-}
-
-std::list<FileData> PolicyManager::getFileDemotionList(std::list<FileData> fileList)
+/*std::list<FileData> PolicyManager::getFileDemotionList(std::list<FileData> fileList)
 {
 	std::list<FileData> migrationList;
 
@@ -55,9 +55,9 @@ std::list<FileData> PolicyManager::getFileDemotionList(std::list<FileData> fileL
 	}
 
 	return migrationList;
-}
+}*/
 
-void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
+Policy* PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	Policy* sizePolicy;
 	int lower;
@@ -72,29 +72,29 @@ void PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			name = (char*) key;
+			printf("name: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"lowerbound"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			lower = std::stoi((char*) key);
+			printf("lower bound: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"upperbound"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			upper = std::stoi((char*) key);
+			printf("upper bound: %s\n", key);
 		}
 		cur = cur->next;
 	}
 	sizePolicy = new SizePolicy(lower, upper);
 	sizePolicy->name = name;
 	sizePolicy->type = "sizepolicy";
-	addPolicy(sizePolicy);
+	return sizePolicy;
 }
 
-void PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
+Policy* PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	Policy* hitPolicy;
 	int min;
@@ -108,23 +108,23 @@ void PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			name = (char*) key;
+			printf("name: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"minimumhits"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			min = std::stoi((char*) key);
+			printf("minimum hits required to retain file: %s\n", key);
 		}
 		cur = cur->next;
 	}
 	hitPolicy = new HitPolicy(min);
 	hitPolicy->name = name;
 	hitPolicy->type = "hitspolicy";
-	addPolicy(hitPolicy);
+	return hitPolicy;
 }
 
-void PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
+Policy* PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
 	Policy* timePolicy;
 	int totalTimeInSeconds = 0;
@@ -132,14 +132,14 @@ void PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 
 	xmlChar *key;
 	cur = cur->xmlChildrenNode;
-	
 
 	while (cur != NULL)
 	{
+
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			name = (char*) key;
+			printf("name: %s\n", key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"years"))
@@ -182,14 +182,17 @@ void PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		cur = cur->next;
 	}
 
+	printf("Total seconds: %d\n", totalTimeInSeconds);
+
 	timePolicy = new TimePolicy(totalTimeInSeconds);
 	timePolicy->name = name;
 	timePolicy->type = "timepolicy";
-	addPolicy(timePolicy);
+	return timePolicy;
 }
 
-void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
+Policy* PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 {
+	Policy* policy;
 	xmlChar *key;
 	xmlChar *policyType;
 
@@ -197,16 +200,20 @@ void PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	policyType = xmlGetProp(cur, (const xmlChar *)"type");
 	if (!xmlStrcmp(policyType, (const xmlChar *)"sizepolicy"))
 	{
-		parseSizePolicy(doc, cur);
+		printf("Size policy Found!\n");
+		policy = parseSizePolicy(doc, cur);
 	}
 	else if (!xmlStrcmp(policyType, (const xmlChar *)"hitspolicy"))
 	{
-		parseHitsPolicy(doc, cur);
+		printf("Hits policy Found!\n");
+		policy = parseHitsPolicy(doc, cur);
 	}
 	else if (!xmlStrcmp(policyType, (const xmlChar *)"timepolicy"))
 	{
-		parseTimePolicy(doc, cur);
+		printf("Time policy Found!\n");
+		policy = parseTimePolicy(doc, cur);
 	}
+	return policy;
 }
 
 std::string PolicyManager::streamFile(const char* filename) {
@@ -214,36 +221,61 @@ std::string PolicyManager::streamFile(const char* filename) {
 	xmlNodePtr cur;
 	doc = xmlParseFile(filename);
 
-	// Make sure document actually read
-	if (doc == NULL)   
-		return "Document not successfully parsed.";
-
-	
-	cur = xmlDocGetRootElement(doc);
-
-	// Make sure document isn't empty
-	if (cur == NULL)
-		return "Empty document.";
-	
-	//  Make sure document is of type policylist
-	if (xmlStrcmp(cur->name, (const xmlChar *) "policylist"))
+	//if the document isn't parsed correctly	
+	if (doc == NULL)
 	{
+		return "Document not successfully parsed.\n";
+		
+	}
+
+	//if the document is empty
+	cur = xmlDocGetRootElement(doc);
+	if (cur == NULL)
+	{
+		return "Empty document.\n";
+	}
+	
+	//ensures xml file's root node is of type policyfile
+	if (xmlStrcmp(cur->name, (const xmlChar *) "policyfile"))
+	{
+		return "Document not of type \"policyfile\".";
 		xmlFreeDoc(doc);
-		return "Document not of type <policylist>.";
+		
 	}
 	
 
-	// parse through policylist to determine type of policy
+	//parse through policylist to determine type of policy
 	cur = cur->xmlChildrenNode; //gets child node of cur
 	while(cur != NULL)
 	{
-		//if there is a match, parse the policy
-		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policy")))
-			parsePolicy(doc, cur);
-
+		//if there is a match, calls function parsePolicyList
+		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policylist")))
+		{
+			fprintf(stderr, "\nPolicy list found:\n");
+			parsePolicyList(doc, cur);
+		}
 		cur = cur->next;
 	}
 	return "Successfully parsed the policies.";
+}
+
+void PolicyManager::parsePolicyList (xmlDocPtr doc, xmlNodePtr cur)
+{
+	std::list<Policy*> newList;
+	//parse through policylist to determine type of policy
+	cur = cur->xmlChildrenNode; //gets child node of cur
+	while(cur != NULL)
+	{
+		//if there is a match, calls function parsePolicy
+		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policy")))
+		{
+			Policy* newPolicy = parsePolicy(doc, cur);
+			newList.push_back(newPolicy);
+		}
+		cur = cur->next;
+	}
+
+	policyList.push_back(newList);
 }
 
 std::string PolicyManager::parsePoliciesFromXMLFile(std::string configFileName) 
@@ -258,7 +290,7 @@ std::string PolicyManager::parsePoliciesFromXMLFile(std::string configFileName)
     return msg;
 }
 
-std::list<Policy*> PolicyManager::getPolicyList() {
+std::list<std::list<Policy*>> PolicyManager::getPolicyList() {
 	return policyList;
 }
 
