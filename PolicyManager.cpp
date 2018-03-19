@@ -18,6 +18,7 @@ void PolicyManager::clear() {
 		}
 		outer++;
     }
+	policyList.clear();
 }
 
 Policy* PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
@@ -35,16 +36,19 @@ Policy* PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+			name = (char*) key;
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"lowerbound"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+			lower = std::stoi((char*) key);
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"upperbound"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+			upper = std::stoi((char*) key);
 		}
 		cur = cur->next;
 	}
@@ -68,11 +72,13 @@ Policy* PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+			name = (char*) key;
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"minimumhits"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+			min = std::stoi((char*) key); 
 		}
 		cur = cur->next;
 	}
@@ -97,6 +103,7 @@ Policy* PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"name"))
 		{
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+			name = (char*) key;
 		}
 
 		if(!xmlStrcmp(cur->name, (const xmlChar *)"years"))

@@ -16,7 +16,7 @@
 #include <thread>
 #include <atomic>
 #include <string>
-
+#include <sstream>
 
 using namespace std;
 std::atomic_bool ready;
@@ -42,28 +42,25 @@ int main(int argc, char** argv)
     int migrationInterval = 30;
 
     // Create necessary classes
-    PolicyManager* pm = new PolicyManager();    
+    PolicyManager pm;    
     AWSConnector aws;
-    pm->parsePoliciesFromXMLFile(POLICIES_PATH);
-    delete pm;
 
     // Initialize AWSConnector
     std::string region = "us-east-2";
     aws.connect(region);
 
     // Spawn daemon
-    //daemonize();
+    daemonize();
 
     syslog (LOG_NOTICE, "Started the migration supervisor.");
     
-    /*ready = false;
+    ready = false;
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
-    /*std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
+    //std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
-
     while (true) {
         sleep(1);
-    }*/
+    }
 
     syslog (LOG_NOTICE, "Supervisor terminated.");
     closelog();
@@ -79,8 +76,9 @@ void updatePolicies(PolicyManager& pm, int time) {
         syslog(LOG_NOTICE, resp.c_str());
 
         for(std::list<Policy*> policyList: pm.getPolicyList()){
-            for (Policy* policy: policyList) {
-                syslog(LOG_NOTICE, "name goes here");
+            for (Policy* p: policyList) {
+                std::string name = p->name;
+                syslog(LOG_NOTICE, name.c_str());
             }
         }
         ready = true; 
@@ -287,7 +285,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
     return intersection;
 }*/
 
-/*void daemonize()
+void daemonize()
 {
     pid_t pid;
 
@@ -335,4 +333,4 @@ vector<FileData> getPromotionList(PolicyManager& pm)
 
     // Open a log file
     openlog ("supervisor", LOG_PID, LOG_DAEMON);
-}*/
+}
