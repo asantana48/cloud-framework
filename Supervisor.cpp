@@ -16,23 +16,24 @@
 #include <thread>
 #include <atomic>
 #include <string>
-
+#include <sstream>
 
 using namespace std;
 std::atomic_bool ready;
 
 // Process & thread related tasks
 void daemonize();
-void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
+//void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
 void updatePolicies(PolicyManager& pm, int time);
-
+/*
 // Migration management functions
 vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
 vector<FileData> getDemotionList(PolicyManager& pm);
-vector<FileData> getPromotionList(PolicyManager& pm);
+vector<FileData> getPromotionList(PolicyManager& pm);*/
 
 // Bucket that we'll be using
 const std::string BUCKET = "devon-bucket";
+
 
 int main(int argc, char** argv)
 {
@@ -56,9 +57,8 @@ int main(int argc, char** argv)
     
     ready = false;
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
-    std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
+    //std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
-
     while (true) {
         sleep(1);
     }
@@ -68,19 +68,25 @@ int main(int argc, char** argv)
     return EXIT_SUCCESS;
 }
 
+
 void updatePolicies(PolicyManager& pm, int time) {
     while (true) {
         ready = false;
         pm.clear();
         string resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
-        
         syslog(LOG_NOTICE, resp.c_str());
+
+        for(std::list<Policy*> policyList: pm.getPolicyList()){
+            for (Policy* p: policyList) {
+                std::string name = p->name;
+                syslog(LOG_NOTICE, name.c_str());
+            }
+        }
         ready = true; 
-        
         sleep(time);
     }
 }
-
+/*
 void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
     Redis_Client RC;
     Redis_Scanner RS;
@@ -238,7 +244,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
     }
     return promotionList;
 }
-
+*/
 
 
 /* Return a vector of files that match all of the migration policies
@@ -255,7 +261,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
 * @return vector<FileData> intersection
 *   Contains the FileData objects that were in all of the fileLists vectors
 */
-vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
+/*vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
 {
     Redis_Scanner RS;
     vector<FileData> temp;
@@ -278,7 +284,7 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         }
     }
     return intersection;
-}
+}*/
 
 void daemonize()
 {

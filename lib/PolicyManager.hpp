@@ -18,25 +18,23 @@
 
 class PolicyManager {
 private:
-    std::list<Policy*> policyList;
+    std::list<std::list<Policy*>> policyList;
 	
-    void parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur);
-    void parsePolicy (xmlDocPtr doc, xmlNodePtr culr);
-    void parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur);
-    void parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur);
+    Policy* parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur);
+    Policy* parsePolicy (xmlDocPtr doc, xmlNodePtr culr);
+    Policy* parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur);
+    Policy* parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur);
+    void parsePolicyList(xmlDocPtr doc, xmlNodePtr cur);
     std::string streamFile(const char* filename);
     
 public:
     PolicyManager() {}
     ~PolicyManager();
-
-    void addPolicy(Policy* p);
+    
     void clear();
-	bool isFilePromoted(FileData fd);
-	std::list<FileData> getFileDemotionList(std::list<FileData> fileList); 
     
     std::string parsePoliciesFromXMLFile(std::string filename);
 
-    std::list<Policy*> getPolicyList();
+    std::list<std::list<Policy*>> getPolicyList();
 };
 #endif
