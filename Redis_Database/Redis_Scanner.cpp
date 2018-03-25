@@ -334,3 +334,20 @@ vector<FileData> Redis_Scanner::getNonLocalFiles()
 	sortVector(files);
 	return files;
 }
+
+void Redis_Scanner::deleteFileFromAllSets(FileData& file)
+{
+	string key = file.localURI;
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& a = rdx.commandSync<int>({"ZREM", "File_Size", key});
+	Command<int>& b = rdx.commandSync<int>({"ZREM", "Is_Local", key});
+	Command<int>& c = rdx.commandSync<int>({"ZREM", "Times_Accessed", key});
+	Command<int>& d = rdx.commandSync<int>({"ZREM", "Last_Modified", key});
+
+	a.free();
+	b.free();
+	c.free();
+	d.free();
+	rdx.disconnect();
+}

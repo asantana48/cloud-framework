@@ -34,6 +34,15 @@ void Redis_Client::Redis_HMSET(FileData& file)
 	rdx.disconnect();
 }
 
+void Redis_Client::Redis_DEL(string key)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"DEL", key});
+	c.free();	
+	rdx.disconnect();
+}
+
 
 
 FileData Redis_Client::Redis_HGETALL(string key)
@@ -164,6 +173,7 @@ int Redis_Client::getTimesAccessed(string key)
 	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Times_Accessed"});
 	if(!c.ok()) {
 		cout << "Command has error code " << c.reply() << endl;
+		return -1;
 	}
 	c.free();
 	rdx.disconnect();

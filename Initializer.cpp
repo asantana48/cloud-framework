@@ -24,28 +24,13 @@ int main(int argc, char* argv[]) {
     vector<int> fileDescriptors;
     Redis_Client RC;
     FileEventHandler FEH;
-    struct stat statObj;
 
     for (string name: filenames) {
-        // Get file metadata
-        string full_path = FILES_PATH + name;
-        stat(full_path.c_str(), &statObj);
-
-        // Put stat into metadata object
-        FileData fd;
-        fd.fileName = name;
-        fd.localURI = full_path;
-        fd.remoteURI = "";
-        fd.fileSize = statObj.st_size;
-        fd.lastModified = statObj.st_atime;
-        fd.timesAccessed = 0;
-        fd.isLocal = true;
-
-        // Put info in db
-        RC.Redis_HMSET(fd);
+        FEH.newFileDataObject(name);
     }
 
     // Start the event handler on the testbed directory
     FEH.initializeINotify();
+    cout << "PARENT PROCESS RETURNED\n";
     return 0;
 }

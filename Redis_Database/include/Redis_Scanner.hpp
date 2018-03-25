@@ -49,6 +49,7 @@ public:
 	vector<FileData> getLocalFiles();
 	vector<FileData> getNonLocalFiles();
 
+	void deleteFileFromAllSets(FileData&);
 
 };
 

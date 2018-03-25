@@ -17,6 +17,9 @@ class FileEventHandler
 
 public:
 	void initializeINotify();
+
+	void newFileDataObject(string);
+
 };
 
 #endif

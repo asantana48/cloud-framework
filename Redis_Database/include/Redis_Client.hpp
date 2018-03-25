@@ -22,8 +22,9 @@ class Redis_Client
 	public:
 
 	void Redis_HMSET(FileData&);
-	FileData Redis_HGETALL(string);
+	void Redis_DEL(string);
 
+	FileData Redis_HGETALL(string);
 	vector<string> Redis_List_All_Keys();
 
 	void setRemoteURI(string, string);
