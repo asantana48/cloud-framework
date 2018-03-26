@@ -25,11 +25,11 @@ std::atomic_bool ready;
 void daemonize();
 //void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
 void updatePolicies(PolicyManager& pm, int time);
-/*
+
 // Migration management functions
 vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
-vector<FileData> getDemotionList(PolicyManager& pm);
-vector<FileData> getPromotionList(PolicyManager& pm);*/
+vector<FileData> getDemotionList(list<Policy*> policyCriteria);
+vector<FileData> getPromotionList(list<Policy*> policyCriteria);
 
 // Bucket that we'll be using
 const std::string BUCKET = "devon-bucket";
@@ -86,7 +86,7 @@ void updatePolicies(PolicyManager& pm, int time) {
         sleep(time);
     }
 }
-/*
+
 void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
     Redis_Client RC;
     Redis_Scanner RS;
@@ -94,34 +94,39 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
         if (ready) {
             // Demote files
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
-            vector<FileData> demotionList = getDemotionList(pm);
-            syslog(LOG_NOTICE, "Demoting the following files:");
-            for (FileData fd: demotionList) {
-                syslog(LOG_NOTICE, fd.fileName.c_str());
-                if (fd.remoteURI == "") {
-                    RC.setRemoteURI(fd.localURI, fd.fileName);       
-                }
-                
-                // Demotion
-                aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
+            for (auto p : pm.getPolicyList())
+            {
+                vector<FileData> demotionList = getDemotionList(p);
+                syslog(LOG_NOTICE, "Demoting the following files:");
+                for (FileData fd: demotionList) {
+                    syslog(LOG_NOTICE, fd.fileName.c_str());
+                    if (fd.remoteURI == "") {
+                        RC.setRemoteURI(fd.localURI, fd.fileName);       
+                    }
+                    
+                    // Demotion
+                    aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
 
-                RC.setIsLocal(fd.localURI, false);
-                RS.changeLocalToNonLocal(fd);
+                    RS.changeLocalToNonLocal(fd);
+                }
             }
             // Promote files
             syslog(LOG_NOTICE, "Querying database for promotion candidates.");
-            vector<FileData> promotionList = getPromotionList(pm);
-            syslog(LOG_NOTICE, "Promoting the following files:");
-            for (FileData fd: promotionList) {
-                syslog(LOG_NOTICE, fd.fileName.c_str());
+            for (auto p : pm.getPolicyList())
+            {
+                vector<FileData> promotionList = getPromotionList(p);
+                syslog(LOG_NOTICE, "Promoting the following files:");
+                for (FileData fd: promotionList) {
+                    syslog(LOG_NOTICE, fd.fileName.c_str());
 
-                // Promotion
-                aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);
+                    // Promotion
+                    aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);
 
-                // Update the database
-                RC.setRemoteURI(fd.localURI, "");
-                RC.setIsLocal(fd.localURI, true);
-                RS.changeNonLocalToLocal(fd);
+                    // Update the database
+                    RC.setRemoteURI(fd.remoteURI, "");
+                    
+                    RS.changeNonLocalToLocal(fd);
+                }
             }
             sleep(time);
         }
@@ -129,7 +134,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 }
 
 
-vector<FileData> getDemotionList(PolicyManager& pm)
+vector<FileData> getDemotionList(list<Policy*> policyCriteria)
 {
     Redis_Scanner RS;
     vector<FileData> demotionList;
@@ -144,7 +149,7 @@ vector<FileData> getDemotionList(PolicyManager& pm)
     
 
     // TODO append instead of set
-    for (auto p : pm.getPolicyList())  {
+    for (auto p : policyCriteria)  {
         // Grab and sort all files within file size policy range
         if (p->type.compare("sizepolicy") == 0) {
             SizePolicy* sp = (SizePolicy*) p;
@@ -183,7 +188,7 @@ vector<FileData> getDemotionList(PolicyManager& pm)
 }
 
 
-vector<FileData> getPromotionList(PolicyManager& pm)
+vector<FileData> getPromotionList(list<Policy*> policyCriteria)
 {
     Redis_Scanner RS;
     vector<FileData> promotionList;
@@ -196,7 +201,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
     vector<FileData> isNonLocal;
    
     // TODO append instead of set
-    for (auto p : pm.getPolicyList())  {
+    for (auto p : policyCriteria)  {
         // Grab and sort all files within file size policy range
         if (p->type.compare("sizepolicy") == 0) {
             SizePolicy* sp = (SizePolicy*) p;
@@ -244,7 +249,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
     }
     return promotionList;
 }
-*/
+
 
 
 /* Return a vector of files that match all of the migration policies
@@ -261,7 +266,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
 * @return vector<FileData> intersection
 *   Contains the FileData objects that were in all of the fileLists vectors
 */
-/*vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
 {
     Redis_Scanner RS;
     vector<FileData> temp;
@@ -284,7 +289,7 @@ vector<FileData> getPromotionList(PolicyManager& pm)
         }
     }
     return intersection;
-}*/
+}
 
 void daemonize()
 {
