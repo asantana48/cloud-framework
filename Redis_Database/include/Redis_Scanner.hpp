@@ -30,25 +30,28 @@ public:
 	void sortVector(vector<FileData>& files);
 
 	void addToFileSizeSet(FileData&);
+	void updateFileInFileSizeSet(FileData&);
 	vector<FileData> getFilesInSizeRange(SizePolicy);
 	vector<FileData> getFilesOutOfSizeRange(SizePolicy);
 	
 	void addToLastModifiedSet(FileData&);
+	void updateFileInLastModifiedSet(FileData&);
 	vector<FileData> getFilesInLastModifiedTime(TimePolicy);
 	vector<FileData> getFilesOutOfLastModifiedTime(TimePolicy);
 
 
 	void addToHitList(FileData&);
+	void updateFileInHitList(FileData&);
 	vector<FileData> getFilesInTimesAccessedRange(HitPolicy);
 	vector<FileData> getFilesOutOfTimesAccessedRange(HitPolicy);
 
 
 	void addToIsLocalList(FileData&);
-	void changeLocalToNonLocal(FileData&);
-	void changeNonLocalToLocal(FileData&);
+	void updateFileInIsLocalList(FileData&);
 	vector<FileData> getLocalFiles();
 	vector<FileData> getNonLocalFiles();
 
+	void addFileToAllSets(FileData&);
 	void deleteFileFromAllSets(FileData&);
 
 };

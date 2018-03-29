@@ -23,6 +23,7 @@ class Redis_Client
 
 	void Redis_HMSET(FileData&);
 	void Redis_DEL(string);
+	void Redis_RENAME(string, string);
 
 	FileData Redis_HGETALL(string);
 	vector<string> Redis_List_All_Keys();
@@ -45,7 +46,6 @@ class Redis_Client
 	void updateLastTimeModified(string);
 	time_t getLastTimeModified(string);
 	
-	string deleteFile(string);
 	time_t stringToTime_t(string);
 };
 

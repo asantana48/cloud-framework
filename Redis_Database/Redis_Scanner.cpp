@@ -50,6 +50,17 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 	rdx.disconnect();
 }
 
+void Redis_Scanner::updateFileInFileSizeSet(FileData& file)
+{
+	string key = file.localURI;
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"ZREM", "File_Size", key});
+	addToFileSizeSet(file);
+	c.free();
+	rdx.disconnect();
+}
+
 
 /* Return a vector of file localURIs with a file size between the 
 * lowLimit and the highLimit. The low and high limits are inclusive
@@ -137,6 +148,16 @@ void Redis_Scanner::addToLastModifiedSet(FileData& file)
 	rdx.disconnect();
 }
 
+void Redis_Scanner::updateFileInLastModifiedSet(FileData& file)
+{
+	string key = file.localURI;
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"ZREM", "Last_Modified", key});
+	addToLastModifiedSet(file);
+	c.free();
+	rdx.disconnect();
+}
 
 /* Return a vector of file localURIs with a last modified time
 * that is greater than the threshold time set in the TimePolicy file.
@@ -209,6 +230,17 @@ void Redis_Scanner::addToHitList(FileData& file)
 	rdx.disconnect();
 }
 
+void Redis_Scanner::updateFileInHitList(FileData& file)
+{
+	string key = file.localURI;
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"ZREM", "Times_Accessed", key});
+	addToHitList(file);
+	c.free();
+	rdx.disconnect();
+}
+
 // Find files that meet time accessed demotion policy
 vector<FileData> Redis_Scanner::getFilesInTimesAccessedRange(HitPolicy policy)
 {
@@ -270,29 +302,12 @@ void Redis_Scanner::addToIsLocalList(FileData& file)
 	rdx.disconnect();
 }
 
-
-void Redis_Scanner::changeLocalToNonLocal(FileData& file)
+void Redis_Scanner::updateFileInIsLocalList(FileData& file)
 {
+	string key = file.localURI;
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-
-	Command<int>& c = rdx.commandSync<int>({"ZREM", "Is_Local", file.localURI});
-	Redis_Client RC;
-	RC.setIsLocal(file.localURI, false);
-	addToIsLocalList(file);
-	c.free();
-	rdx.disconnect();
-}
-
-
-void Redis_Scanner::changeNonLocalToLocal(FileData& file)
-{
-	Redox rdx;
-	rdx.connect("localhost", 6379);
-
-	Command<int>& c = rdx.commandSync<int>({"ZREM", "Is_Local", file.localURI});
-	Redis_Client RC;
-	RC.setIsLocal(file.localURI, true);
+	Command<int>& c = rdx.commandSync<int>({"ZREM", "Is_Local", key});
 	addToIsLocalList(file);
 	c.free();
 	rdx.disconnect();
@@ -333,6 +348,14 @@ vector<FileData> Redis_Scanner::getNonLocalFiles()
 	rdx.disconnect();
 	sortVector(files);
 	return files;
+}
+
+void Redis_Scanner::addFileToAllSets(FileData& file)
+{
+	addToFileSizeSet(file);
+	addToHitList(file);
+	addToIsLocalList(file);
+	addToLastModifiedSet(file);
 }
 
 void Redis_Scanner::deleteFileFromAllSets(FileData& file)

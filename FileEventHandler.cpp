@@ -23,6 +23,7 @@ void FileEventHandler::initializeINotify()
 	char *ptr;
 	string directory = FILES_PATH;
 	string trash = "/home/graves/.local/share/Trash/files";
+	string oldFileName = "";
 
 	Redis_Client RC;
 	Redis_Scanner RS;
@@ -49,7 +50,7 @@ void FileEventHandler::initializeINotify()
 	// This is where the different events are specified
 	// If needed, more events can be added as the third parameter
 	// wd = inotify(fd, file.localURI, IN_ACCESS | IN_DELETE | IN_MODIFY); and so on
-	wd[0] = inotify_add_watch(fd, directory.c_str(), IN_CREATE | IN_OPEN | IN_DELETE);
+	wd[0] = inotify_add_watch(fd, directory.c_str(), IN_ALL_EVENTS);
 
 	wd[1] = inotify_add_watch(fd, trash.c_str(), IN_DELETE);
 
@@ -78,6 +79,7 @@ void FileEventHandler::initializeINotify()
 
 	while(1 < 2)
 	{
+
 		length = read(fd, buffer, BUF_LEN);
 
 		if (length < 0)
@@ -102,7 +104,7 @@ void FileEventHandler::initializeINotify()
 					RC.incrementTimesAccessed(key);
 				}
 
-							// If a file is created in the watched directory, add its local URI to the database
+				// If a file is created in the watched directory, add its local URI to the database
 				if (event->mask & IN_CREATE)
 				{
 					printf("File created: %s\n", event->name);
@@ -116,6 +118,40 @@ void FileEventHandler::initializeINotify()
 					FileData fd = RC.Redis_HGETALL(key);
 					RS.deleteFileFromAllSets(fd);
 					RC.Redis_DEL(key);
+				}
+
+				// If a file is modified, update its size and last modified time
+				if (event->mask & IN_MODIFY)
+				{
+					printf("File modified: %s\n", event->name);
+					struct stat statObj;
+					stat(key.c_str(), &statObj);
+					RC.setFileSize(key, statObj.st_size);
+				}
+
+				// If a file is moved or renamed, this will grab the new name of the file
+				if (event->mask & IN_MOVED_TO)
+				{
+					printf("File renamed to %s\n", event->name);
+					printf("old file directory: %s\n", oldFileName);
+					printf("New key: %s\n", key);
+					if (strcmp(oldFileName.c_str(), "") != 0)
+					{
+						RC.Redis_RENAME(oldFileName, key);
+						RC.setFileName(key, event->name);
+					}
+
+					oldFileName = "";
+				}
+
+				// If a file is moved or renamed, this will grab the old name of the file
+				if (event->mask & IN_MOVED_FROM)
+				{
+					printf("File %s is being changed\n", event->name);
+					if (strcmp(oldFileName.c_str(), "") == 0)
+					{
+						oldFileName = key;
+					}
 				}
 			}
 		}

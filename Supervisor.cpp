@@ -107,7 +107,9 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     // Demotion
                     aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
 
-                    RS.changeLocalToNonLocal(fd);
+                    fd.isLocal = false;
+
+                    RS.updateFileInIsLocalList(fd);
                 }
             }
             // Promote files
@@ -125,7 +127,9 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     // Update the database
                     RC.setRemoteURI(fd.remoteURI, "");
                     
-                    RS.changeNonLocalToLocal(fd);
+                    fd.isLocal = true;
+
+                    RS.updateFileInIsLocalList(fd);
                 }
             }
             sleep(time);

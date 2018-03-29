@@ -22,10 +22,7 @@ void Redis_Client::Redis_HMSET(FileData& file)
 	if(c.ok()) {
 		cout << file.fileName << " successfully added to the database!\n";
 		Redis_Scanner RS;
-		RS.addToFileSizeSet(file);
-		RS.addToLastModifiedSet(file);
-		RS.addToHitList(file);
-		RS.addToIsLocalList(file);
+		RS.addFileToAllSets(file);
 	}
 	else {
 		cerr << "Command has error code " << c.status() << endl;
@@ -43,6 +40,19 @@ void Redis_Client::Redis_DEL(string key)
 	rdx.disconnect();
 }
 
+void Redis_Client::Redis_RENAME(string originalKey, string newKey)
+{
+	Redox rdx;
+	Redis_Scanner RS;
+	rdx.connect("localhost", 6379);
+	FileData oldFile = Redis_HGETALL(originalKey);
+	Command<string>& c = rdx.commandSync<string>({"RENAME", originalKey, newKey});
+	FileData newFile = Redis_HGETALL(newKey);
+	RS.deleteFileFromAllSets(oldFile);
+	RS.addFileToAllSets(newFile);
+	c.free();	
+	rdx.disconnect();
+}
 
 
 FileData Redis_Client::Redis_HGETALL(string key)
@@ -131,10 +141,13 @@ string Redis_Client::getFileName(string key)
 void Redis_Client::setFileSize(string key, int fileSize)
 {
 	Redox rdx;
+	Redis_Scanner RS;
 	rdx.connect("localhost", 6379);
 	Command<int>& c = rdx.commandSync<int>({"HSET", key,"File_Size", to_string(fileSize)});
 	c.free();
 	rdx.disconnect();
+	FileData fd = Redis_HGETALL(key);
+	RS.updateFileInFileSizeSet(fd);
 	updateLastTimeModified(key);
 }
 
@@ -158,10 +171,13 @@ void Redis_Client::incrementTimesAccessed(string key)
 	int times_accessed = getTimesAccessed(key);
 	times_accessed += 1;
 	Redox rdx;
+	Redis_Scanner RS;
 	rdx.connect("localhost", 6379);
 	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Times_Accessed", to_string(times_accessed)});
 	c.free();
 	rdx.disconnect();
+	FileData fd = Redis_HGETALL(key);
+	RS.updateFileInHitList(fd);
 	updateLastTimeModified(key);
 }
 
@@ -213,11 +229,15 @@ void Redis_Client::updateLastTimeModified(string key)
 	time_t currentTime;
 	time(&currentTime); 
 	Redox rdx;
+	Redis_Scanner RS;
 	rdx.connect("localhost", 6379);
 	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Last_Modified", ctime(&currentTime)});
 	if(!c.ok()) {
 		cout << "Command has error code " << c.reply() << endl;
+		return;
 	}
+	FileData fd = Redis_HGETALL(key);
+	RS.updateFileInLastModifiedSet(fd);
 	c.free();
 	rdx.disconnect();
 }
@@ -234,22 +254,6 @@ time_t Redis_Client::getLastTimeModified(string key)
 	c.free();
 	rdx.disconnect();
 	return time;
-}
-
-
-string Redis_Client::deleteFile(string key)
-{
-	string reply;
-	Redox rdx;
-	rdx.connect("localhost", 6379);
-	Command<int>& c = rdx.commandSync<int>({"DEL", key});
-	if(c.reply() == 0) {
-		reply = "Error while deleting file\n";
-	}
-	reply = "File was successfully deleted!\n"; 
-	c.free();
-	rdx.disconnect();
-	return reply;
 }
 
 
