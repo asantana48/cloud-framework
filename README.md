@@ -28,4 +28,12 @@ NOTE that you should probably stop the supervise daemon before doing this.
 ### Reading the log
 journalctl -f
 
+## AQR information
+For easy compilation, put this in your .bashrc or export the variable manually:
+export CPATH=/usr/include/AQR
+
+To compile: 
+g++ ccurrados_test.cpp -o ccurrados_test -lAQR -lAQRDebugTraceInterface -lAQRPlatformIndependentInterface -lpthread
+
+Make sure you are root when running the test because only root has the VMs set up.
 
