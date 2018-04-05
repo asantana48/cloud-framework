@@ -8,7 +8,7 @@ const string TAB = "        ";
 
 int main() {
 	ofstream myfile;
-	myfile.open("example.xml", ios::out | ios::trunc);
+	myfile.open("policies.xml", ios::out | ios::trunc);
 	myfile << "<?xml version=\"1.0\" ?>\n<policyfile>\n";
 
 	bool createNewPolicyList = true;
