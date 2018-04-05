@@ -35,10 +35,10 @@ int main() {
 				cout << "Enter the name of the size policy: ";
 				string sizePolicyName;
 				cin >> sizePolicyName;
-				cout << "Enter the lower bound for the size policy: ";
+				cout << "Enter the lower bound for the size policy in bytes: ";
 				int lowerBound;
 				cin >> lowerBound;
-				cout << "Enter the upper bound for the size policy: ";
+				cout << "Enter the upper bound for the size policy in bytes: ";
 				int upperBound;
 				cin >> upperBound;
 				cout << endl;
