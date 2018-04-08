@@ -1,6 +1,7 @@
 #include "lib/FileEventHandler.hpp"
 #include "Redis_Database/include/Redis_Client.hpp"
 #include "Redis_Database/include/Redis_Scanner.hpp"
+#include "lib/Constants.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -22,7 +23,8 @@ void FileEventHandler::initializeINotify()
 	const struct inotify_event *event;
 	char *ptr;
 	string directory = FILES_PATH;
-	string trash = "/home/graves/.local/share/Trash/files";
+	string trash = TRASH_PATH;
+
 	string oldFileName = "";
 
 	Redis_Client RC;
