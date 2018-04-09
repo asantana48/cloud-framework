@@ -6,7 +6,8 @@ using namespace std;
 const string TAB = "        ";
 
 
-int main() {
+int main() 
+{
 	ofstream myfile;
 	myfile.open("policies.xml", ios::out | ios::trunc);
 	myfile << "<?xml version=\"1.0\" ?>\n<policyfile>\n";
@@ -93,7 +94,7 @@ int main() {
 				cout << endl;
 
 
-				myfile << TAB << TAB << "<policy type=\"hitspolicy\">\n";
+				myfile << TAB << TAB << "<policy type=\"timepolicy\">\n";
 				myfile << TAB << TAB << TAB << "<name>" << timePolicyName << "</name>\n";
 				myfile << TAB << TAB << TAB << "<years>" << years << "</years>\n";
 				myfile << TAB << TAB << TAB << "<months>" << months << "</months>\n";
@@ -158,6 +159,9 @@ int main() {
 
 	myfile << "</policyfile>";
 	myfile.close();
+
+	cout << "\nOutput policies xml file to local directory.";
+
 	return 0;
 }
 
