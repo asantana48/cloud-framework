@@ -23,7 +23,7 @@ std::atomic_bool ready;
 
 // Process & thread related tasks
 void daemonize();
-//void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
+void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
 void updatePolicies(PolicyManager& pm, int time);
 
 // Migration management functions
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     
     ready = false;
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
-    //std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
+    std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
     while (true) {
         sleep(1);
@@ -177,7 +177,19 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
         syslog(LOG_NOTICE, local.c_str());
     }
     
-    
+    for (FileData fd: inSizeRange) {
+        string local = "Size file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    for (FileData fd: inTimeRange) {
+        string local = "Time file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    for (FileData fd: inHitsRange) {
+        string local = "Hits file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+
     // Find the intersection of the demotion policies
     vector<vector<FileData>> fileLists = {isLocal, inSizeRange, inTimeRange, inHitsRange};
     demotionList = findIntersection(fileLists, intersection, i);
