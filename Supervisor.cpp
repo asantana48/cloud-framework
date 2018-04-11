@@ -102,7 +102,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                 for (FileData fd: demotionList) {
                     syslog(LOG_NOTICE, fd.fileName.c_str());
                     if (fd.remoteURI == "") {
-                        RC.setRemoteURI(fd.localURI, fd.fileName);       
+                        RC.setRemoteURI(fd.localURI, fd.fileName);   
+                        fd.remoteURI = fd.fileName; 
                     }
                     
                     // Demotion
@@ -126,7 +127,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);
 
                     // Update the database
-                    RC.setRemoteURI(fd.remoteURI, "");
+                    RC.setRemoteURI(fd.localURI, "");
                     
                     fd.isLocal = true;
 
@@ -178,7 +179,19 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
         syslog(LOG_NOTICE, local.c_str());
     }
     
-    
+    for (FileData fd: inSizeRange) {
+        string local = "Size file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    for (FileData fd: inTimeRange) {
+        string local = "Time file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+    for (FileData fd: inHitsRange) {
+        string local = "Hits file: " + fd.fileName;
+        syslog(LOG_NOTICE, local.c_str());
+    }
+
     // Find the intersection of the demotion policies
     vector<vector<FileData>> fileLists = {isLocal, inSizeRange, inTimeRange, inHitsRange};
     demotionList = findIntersection(fileLists, intersection, i);
@@ -280,6 +293,9 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
         RS.sortVector(temp);
         i = 2;
+        for (FileData fd : temp) {
+            syslog(LOG_NOTICE, fd.fileName.c_str());
+        }
         intersection = findIntersection(fileLists, temp, i);
     }
 
@@ -290,6 +306,9 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
             set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
             RS.sortVector(temp);
             i++;
+            for (FileData fd : temp) {
+                syslog(LOG_NOTICE, fd.fileName.c_str());
+            }
             intersection = findIntersection(fileLists, temp, i);
         }
     }
