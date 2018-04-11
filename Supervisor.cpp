@@ -23,8 +23,9 @@ std::atomic_bool ready;
 
 // Process & thread related tasks
 void daemonize();
-//void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
+void manageFiles(PolicyManager& pm, AWSConnector& aws, int time);
 void updatePolicies(PolicyManager& pm, int time);
+
 
 // Migration management functions
 vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
@@ -57,7 +58,7 @@ int main(int argc, char** argv)
     
     ready = false;
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
-    //std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
+    std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
     while (true) {
         sleep(1);

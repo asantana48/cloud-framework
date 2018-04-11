@@ -22,13 +22,9 @@ int main(int argc, char* argv[])
 
 	cout << "OBJECTS in devon-bucket\n";
 	for (auto &b: aws.listBucketContents("devon-bucket"))
-		cout << b.getLocalURI() << " (" << b.getFileSize() << ")" << endl;
+		cout << b << endl;
 	cout << endl;
 
-	cout << "ALL OBJECTS\n";
-	for (auto &b: aws.listAllObjects())
-		cout << b.getLocalURI() << " (" << b.getFileSize() << ")" << endl;
-	cout << endl;
 	
 	for (int i = 0; i < argc; ++i) 
 	{
@@ -38,7 +34,7 @@ int main(int argc, char* argv[])
 		}
 		else if (0 == strcmp(argv[i], "promote")) {
 			cout << "Promoting object\n";
-			aws.promoteObject("devon-bucket", "small_old", "testbed/small_old");
+			aws.promoteObject("devon-bucket", "small_old", "testbed/volatile_1_byte.txt");
 		}
 		else if (0 == strcmp(argv[i], "demote")) {
 			cout << "Demoting object\n";

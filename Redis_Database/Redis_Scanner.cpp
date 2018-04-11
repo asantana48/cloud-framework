@@ -38,13 +38,9 @@ void Redis_Scanner::addToFileSizeSet(FileData& file)
 	rdx.connect("localhost", 6379);
 
 	Command<int>& c = rdx.commandSync<int>({"ZADD", "File_Size", to_string(file.fileSize), file.localURI});
-	if(c.reply() == 1)
+	if(c.reply() != 1)
 	{
-		cout << file.fileName << " successfully added to file size set!\n";
-	}
-	else
-	{
-		cout << "Error while adding file to file size set!\n";
+		cout << "Error while adding "<< file.fileName << " to File_Size set!\n";
 	}
 	c.free();
 	rdx.disconnect();
@@ -136,13 +132,9 @@ void Redis_Scanner::addToLastModifiedSet(FileData& file)
 	rdx.connect("localhost", 6379);
 
 	Command<int>& c = rdx.commandSync<int>({"ZADD", "Last_Modified", to_string(static_cast<long int>(file.lastModified)), file.localURI});
-	if(c.reply() == 1)
+	if(c.reply() != 1)
 	{
-		cout << file.fileName << " successfully added to last modified set!\n";
-	}
-	else
-	{
-		cout << "Error while adding file to last modified set!\n";
+		cout << "Error while adding "<< file.fileName << " to Last_Modified set!\n";
 	}
 	c.free();
 	rdx.disconnect();
@@ -218,13 +210,9 @@ void Redis_Scanner::addToHitList(FileData& file)
 	rdx.connect("localhost", 6379);
 
 	Command<int>& c = rdx.commandSync<int>({"ZADD", "Times_Accessed", to_string(file.timesAccessed), file.localURI});
-	if(c.reply() == 1)
+	if(c.reply() != 1)
 	{
-		cout << file.fileName << " successfully added to times accessed set!\n";
-	}
-	else
-	{
-		cout << "Error while adding file to times accessed set!\n";
+		cout << "Error while adding "<< file.fileName << " to Times_Accessed set!\n";
 	}
 	c.free();
 	rdx.disconnect();
@@ -290,13 +278,9 @@ void Redis_Scanner::addToIsLocalList(FileData& file)
 	rdx.connect("localhost", 6379);
 
 	Command<int>& c = rdx.commandSync<int>({"ZADD", "Is_Local", to_string(file.isLocal), file.localURI});
-	if(c.reply() == 1)
+	if(c.reply() != 1)
 	{
-		cout << file.fileName << " successfully added to is local set!\n";
-	}
-	else
-	{
-		cout << "Error while adding file to is local set!\n";
+		cout << "Error while adding "<< file.fileName << " to Is_Local set!\n";
 	}
 	c.free();
 	rdx.disconnect();

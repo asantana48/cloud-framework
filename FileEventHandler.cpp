@@ -100,21 +100,18 @@ void FileEventHandler::initializeINotify()
 				if (event->mask & IN_OPEN)
 				{
 					// Add conditional to check for directory
-					printf("File accessed: %s\n", event->name);
 					RC.incrementTimesAccessed(key);
 				}
 
 				// If a file is created in the watched directory, add its local URI to the database
 				if (event->mask & IN_CREATE)
 				{
-					printf("File created: %s\n", event->name);
 					newFileDataObject(event->name);
 				}
 
 				// If a file is deleted, remove its local URI from the database
 				if (event->mask & IN_DELETE)
 				{
-					printf("File deleted: %s\n", event->name);
 					FileData fd = RC.Redis_HGETALL(key);
 					RS.deleteFileFromAllSets(fd);
 					RC.Redis_DEL(key);
@@ -123,7 +120,6 @@ void FileEventHandler::initializeINotify()
 				// If a file is modified, update its size and last modified time
 				if (event->mask & IN_MODIFY)
 				{
-					printf("File modified: %s\n", event->name);
 					struct stat statObj;
 					stat(key.c_str(), &statObj);
 					RC.setFileSize(key, statObj.st_size);
@@ -132,9 +128,6 @@ void FileEventHandler::initializeINotify()
 				// If a file is moved or renamed, this will grab the new name of the file
 				if (event->mask & IN_MOVED_TO)
 				{
-					printf("File renamed to %s\n", event->name);
-					printf("old file directory: %s\n", oldFileName);
-					printf("New key: %s\n", key);
 					if (strcmp(oldFileName.c_str(), "") != 0)
 					{
 						RC.Redis_RENAME(oldFileName, key);
@@ -147,7 +140,6 @@ void FileEventHandler::initializeINotify()
 				// If a file is moved or renamed, this will grab the old name of the file
 				if (event->mask & IN_MOVED_FROM)
 				{
-					printf("File %s is being changed\n", event->name);
 					if (strcmp(oldFileName.c_str(), "") == 0)
 					{
 						oldFileName = key;
