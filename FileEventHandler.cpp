@@ -101,7 +101,11 @@ void FileEventHandler::initializeINotify()
 				// If a file is opened, increment "Times_Accessed" in database
 				if (event->mask & IN_OPEN)
 				{
-					// Add conditional to check for directory
+					FileData fd = RC.Redis_HGETALL(key);
+					if(fd.isMetadata == true)
+					{
+						// Promote file back into the file system
+					}
 					RC.incrementTimesAccessed(key);
 				}
 
@@ -171,6 +175,7 @@ void FileEventHandler::newFileDataObject(string fileName)
     fd.lastModified = statObj.st_atime;
     fd.timesAccessed = 0;
     fd.isLocal = true;
+    fd.isMetadata = false;
 
     // Put info in db
     RC.Redis_HMSET(fd);

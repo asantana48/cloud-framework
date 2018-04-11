@@ -15,6 +15,7 @@ struct FileData
     int timesAccessed; 
     time_t lastModified;
     bool isLocal;
+    bool isMetadata;
 
 	std::string getFileSize()
 	{
@@ -39,6 +40,12 @@ struct FileData
     std::string getIsLocal() {
         std::stringstream s;
         s << isLocal;
+        return s.str();
+    }
+
+    std::string getIsMetadata() {
+        std::stringstream s;
+        s << isMetadata;
         return s.str();
     }
 };

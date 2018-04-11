@@ -1,0 +1,13 @@
+File is chosen for migration
+
+A copy of that file's metadata is kept in fileData object (new)
+
+File is migrated to AWS
+File is deleted from file system
+File is deleted from database
+Update remote URI in fileData object
+
+New file is created with same name as deleted file (new)
+New file created an entry in the database (new)
+Update the new database enrty with the same metadata as the migrated file (new)
+Set isMetadata flag to 1 (new)

@@ -42,6 +42,9 @@ class Redis_Client
 
 	void setIsLocal(string, bool);
 	bool getIsLocal(string);
+
+	void setIsMetadata(string, bool);
+	bool getIsMetadata(string);
 	
 	void updateLastTimeModified(string);
 	time_t getLastTimeModified(string);
