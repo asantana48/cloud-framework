@@ -71,10 +71,10 @@ int main(int argc, char* argv[])
 	time(&currentTime);
 	//currentTime = localtime(&t);
 
-	struct FileData File1 = {"/home/file1", "", "File1", 500, 120, static_cast<long int>(currentTime) - 865000, true};
-	struct FileData File2 = {"/home/file2", "", "File2", 260, 250, static_cast<long int>(currentTime) - 865000, true};
-	struct FileData File3 = {"/home/file3", "", "File3", 1024, 790, static_cast<long int>(currentTime), true};
-	struct FileData File4 = {"/home/file4", "", "File4", 780, 700, static_cast<long int>(currentTime) - 865000, true};
+	struct FileData File1 = {"/home/file1", "File1", "", 500, 120, static_cast<long int>(currentTime) - 865000, true, false};
+	struct FileData File2 = {"/home/file2", "File2", "", 260, 250, static_cast<long int>(currentTime) - 865000, true, false};
+	struct FileData File3 = {"/home/file3", "File3", "", 1024, 790, static_cast<long int>(currentTime), true, false};
+	struct FileData File4 = {"/home/file4", "File4", "", 780, 700, static_cast<long int>(currentTime) - 865000, true, false};
 
 	// File sizes will be added to sorted set through this function
 	RC.Redis_HMSET(File1);
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
     vector<FileData> temp4 = RS.getLocalFiles();
     //sortVector(temp4);
 
-    vector<vector<FileData>> fileLists = {temp1, temp2, temp3};
+    vector<vector<FileData>> fileLists = {temp3, temp4};
 
 
     demotionList = findIntersection(fileLists, intersection, i);

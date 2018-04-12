@@ -100,7 +100,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             {
                 vector<FileData> demotionList = getDemotionList(p);
                 syslog(LOG_NOTICE, "Demoting the following files:");
-                for (FileData fd: demotionList) {
+                for (auto fd: demotionList) {
                     syslog(LOG_NOTICE, "Demoting file: ");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
                     if (fd.remoteURI == "") {
@@ -120,7 +120,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     fd.isMetadata = true;
 
                     // Create a copy of the demoted file
-                    fstream newFile(fd.fileName);
+                    ofstream newFile("/home/graves/cloud-framework/testbed/" + fd.fileName);
 
                     // Update the entry in the database with the demoted file's metadata
                     RC.Redis_HMSET(fd);
@@ -165,6 +165,7 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
     vector<FileData> inTimeRange;
     vector<FileData> inHitsRange;
     vector<FileData> isLocal;
+    vector<vector<FileData>> fileLists;
 
     
 
@@ -174,20 +175,25 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
         if (p->type.compare("sizepolicy") == 0) {
             SizePolicy* sp = (SizePolicy*) p;
             inSizeRange = RS.getFilesInSizeRange(*sp);
+            fileLists.push_back(inSizeRange);
         }
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
             TimePolicy* tp = (TimePolicy*) p;
             inTimeRange = RS.getFilesInLastModifiedTime(*tp);
+            fileLists.push_back(inTimeRange);
         }
         // Grab and sort all files within times accessed range
         else if (p->type.compare("hitspolicy") == 0) {
             HitPolicy* hp = (HitPolicy*) p;
             inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
+            fileLists.push_back(inHitsRange);
         }
     } 
     // Grab all local files
     isLocal = RS.getLocalFiles();
+    fileLists.push_back(isLocal);
+
     for (FileData fd: isLocal) {
         string local = "Local file: " + fd.fileName;
         syslog(LOG_NOTICE, local.c_str());
@@ -207,16 +213,15 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
     }
 
     // Find the intersection of the demotion policies
-    vector<vector<FileData>> fileLists = {isLocal, inSizeRange, inTimeRange, inHitsRange};
     demotionList = findIntersection(fileLists, intersection, i);
 
     // Print files to demote
-    /*
+    syslog(LOG_NOTICE, "Intersection files: ");
     for (int i=0; i<demotionList.size(); i++)
     {
         syslog(LOG_NOTICE, demotionList[i].fileName.c_str());
     }
-    */
+    
 
     return demotionList;
 }
@@ -309,9 +314,6 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
         RS.sortVector(temp);
         i = 2;
-        for (FileData fd : temp) {
-            //syslog(LOG_NOTICE, fd.fileName.c_str());
-        }
         intersection = findIntersection(fileLists, temp, i);
     }
 
@@ -322,9 +324,6 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
             set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
             RS.sortVector(temp);
             i++;
-            for (FileData fd : temp) {
-                //syslog(LOG_NOTICE, fd.fileName.c_str());
-            }
             intersection = findIntersection(fileLists, temp, i);
         }
     }
