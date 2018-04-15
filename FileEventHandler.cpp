@@ -1,4 +1,5 @@
 #include "lib/FileEventHandler.hpp"
+#include "lib/AWSConnector.hpp"
 #include "Redis_Database/include/Redis_Client.hpp"
 #include "Redis_Database/include/Redis_Scanner.hpp"
 #include "lib/Constants.hpp"
@@ -24,6 +25,12 @@ void FileEventHandler::initializeINotify()
 	char *ptr;
 	string directory = FILES_PATH;
 	string trash = TRASH_PATH;
+
+	// Promote file back into the file system
+	AWSConnector aws;
+	// Initialize AWSConnector
+    std::string region = "us-east-2";
+	aws.connect(region);
 
 	string oldFileName = "";
 
@@ -101,12 +108,17 @@ void FileEventHandler::initializeINotify()
 				// If a file is opened, increment "Times_Accessed" in database
 				if (event->mask & IN_OPEN)
 				{
-					FileData fd = RC.Redis_HGETALL(key);
-					if(fd.isMetadata == true)
+					
+					/*FileData fd = RC.Redis_HGETALL(key);
+					int pos;
+					if (fd.isMetadata == true)
 					{
-						// Promote file back into the file system
+						aws.getObject(BUCKET, fd.remoteURI, fd.localURI);  
 					}
-					RC.incrementTimesAccessed(key);
+					RC.setFileSize(key, fd.)
+					RC.setIsLocal(key, true);
+					RC.setIsMetadata(k, false);
+					RC.incrementTimesAccessed(key);*/
 				}
 
 				// If a file is created in the watched directory, add its local URI to the database
@@ -126,9 +138,12 @@ void FileEventHandler::initializeINotify()
 				// If a file is modified, update its size and last modified time
 				if (event->mask & IN_MODIFY)
 				{
-					struct stat statObj;
-					stat(key.c_str(), &statObj);
-					RC.setFileSize(key, statObj.st_size);
+					FileData fd = RC.Redis_HGETALL(key);
+					if (!fd.isMetadata) {
+						struct stat statObj;
+						stat(key.c_str(), &statObj);
+						RC.setFileSize(key, statObj.st_size);
+					}
 				}
 
 				// If a file is moved or renamed, this will grab the new name of the file

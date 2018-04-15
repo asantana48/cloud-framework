@@ -12,4 +12,7 @@ static const std::string FILES_PATH =  "/home/graves/cloud-framework/testbed/";
 static const std::string POLICIES_PATH = "/home/graves/cloud-framework/res/policies.xml";
 static const std::string TRASH_PATH = "/home/graves/.local/share/Trash/files";
 
+// Bucket that we'll be using
+static const std::string BUCKET = "devon-bucket";
+
 #endif
