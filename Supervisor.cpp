@@ -113,13 +113,6 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     syslog(LOG_NOTICE, "File demoted:");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
-
-
-                    tempFD.isLocal = false;
-
-                    // Update the isMetadata flag on the migrated file
-                    tempFD.isMetadata = true;
-
                     // Create a copy of the demoted file
                     ofstream newFile(FILES_PATH + tempFD.fileName);
 
@@ -127,10 +120,14 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 
                     newFile.close();
 
+                    tempFD.isLocal = false;
+
+                    tempFD.isMetadata = true;
+
                     // Update the entry in the database with the demoted file's metadata
                     RC.Redis_HMSET(tempFD);
-
                 }
+
                 demotionList.clear();
                 syslog(LOG_NOTICE, "----------DEMOTION END----------");
             }

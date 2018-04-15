@@ -124,7 +124,12 @@ void FileEventHandler::initializeINotify()
 				// If a file is created in the watched directory, add its local URI to the database
 				if (event->mask & IN_CREATE)
 				{
-					newFileDataObject(event->name);
+					FileData fd = RC.Redis_HGETALL(key);
+					if (fd.localURI.empty())
+					{
+						cout << "NO NAME FOUND!\n";
+						newFileDataObject(event->name);
+					}
 				}
 
 				// If a file is deleted, remove its local URI from the database
