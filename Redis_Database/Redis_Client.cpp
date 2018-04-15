@@ -64,21 +64,13 @@ FileData Redis_Client::Redis_HGETALL(string key)
 	vector<string> metaData = c.reply();
 	FileData file;
 
-	if(metaData[1].empty())
-	{
-		cout << "NO ENTRY FOUND!!!\n";
-		return file;
-	}
-	else
-	{
-		file.localURI = key;
-		file.fileName = metaData[1];
-		file.remoteURI = metaData[3];
-		file.fileSize = stoi(metaData[5]);
-		file.timesAccessed = stoi(metaData[7]);
-		file.lastModified = stringToTime_t(metaData[9]);
-		file.isLocal = stoi(metaData[11]);
-	}
+	file.localURI = key;
+	file.fileName = metaData[1];
+	file.remoteURI = metaData[3];
+	file.fileSize = stoi(metaData[5]);
+	file.timesAccessed = stoi(metaData[7]);
+	file.lastModified = stringToTime_t(metaData[9]);
+	file.isLocal = stoi(metaData[11]);
 
 	c.free();
 	rdx.disconnect();
