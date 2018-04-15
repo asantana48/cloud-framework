@@ -92,6 +92,7 @@ void updatePolicies(PolicyManager& pm, int time) {
 void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
     Redis_Client RC;
     Redis_Scanner RS;
+    FileData tempFD;
     while (true) {
         if (ready) {
             // Demote files
@@ -99,7 +100,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             for (auto p : pm.getPolicyList())
             {
                 vector<FileData> demotionList = getDemotionList(p);
-                syslog(LOG_NOTICE, "Demoting the following files:");
+                syslog(LOG_NOTICE, "----------DEMOTION START----------");
                 for (auto fd: demotionList) {
                     syslog(LOG_NOTICE, "Demoting file: ");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
@@ -108,37 +109,47 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                         fd.remoteURI = fd.fileName; 
                     }
                     
+                    tempFD = fd;
+
                     // Demotion
                     aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
                     syslog(LOG_NOTICE, "File demoted:");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
 
-                    fd.isLocal = false;
+
+                    tempFD.isLocal = false;
 
                     // Update the isMetadata flag on the migrated file
-                    fd.isMetadata = true;
+                    tempFD.isMetadata = true;
 
                     // Create a copy of the demoted file
-                    ofstream newFile("/home/graves/cloud-framework/testbed/" + fd.fileName);
+                    ofstream newFile(FILES_PATH + tempFD.fileName);
+
+                    newFile << "This is a metadata stub for " << tempFD.fileName;
+
+                    newFile.close();
 
                     // Update the entry in the database with the demoted file's metadata
-                    RC.Redis_HMSET(fd);
+                    RC.Redis_HMSET(tempFD);
 
-                    RS.updateFileInIsLocalList(fd);
                 }
+                demotionList.clear();
+                syslog(LOG_NOTICE, "----------DEMOTION END----------");
             }
             // Promote files
             syslog(LOG_NOTICE, "Querying database for promotion candidates.");
             for (auto p : pm.getPolicyList())
             {
                 vector<FileData> promotionList = getPromotionList(p);
-                syslog(LOG_NOTICE, "Promoting the following files:");
+                syslog(LOG_NOTICE, "----------PROMOTION START----------");
                 for (FileData fd: promotionList) {
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
                     // Promotion
                     aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);
+                    syslog(LOG_NOTICE, "File promoted:");
+                    syslog(LOG_NOTICE, fd.fileName.c_str());
 
                     // Update the database
                     RC.setRemoteURI(fd.localURI, "");
@@ -148,6 +159,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     RS.updateFileInIsLocalList(fd);
                 }
             }
+
+            syslog(LOG_NOTICE, "----------PROMOTION END----------");
             sleep(time);
         }
     }
@@ -174,7 +187,7 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
         // Grab and sort all files within file size policy range
         if (p->type.compare("sizepolicy") == 0) {
             SizePolicy* sp = (SizePolicy*) p;
-            inSizeRange = RS.getFilesInSizeRange(*sp);
+            inSizeRange = RS.getFilesOutOfSizeRange(*sp);
             fileLists.push_back(inSizeRange);
         }
         // Grab and sort all files within last modified time range
@@ -216,7 +229,7 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
     demotionList = findIntersection(fileLists, intersection, i);
 
     // Print files to demote
-    syslog(LOG_NOTICE, "Intersection files: ");
+    syslog(LOG_NOTICE, "Demotion Intersection files: ");
     for (int i=0; i<demotionList.size(); i++)
     {
         syslog(LOG_NOTICE, demotionList[i].fileName.c_str());
@@ -238,27 +251,34 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
     vector<FileData> inTimeRange;
     vector<FileData> inHitsRange;
     vector<FileData> isNonLocal;
-   
+    vector<vector<FileData>> fileLists;
+
     // TODO append instead of set
     for (auto p : policyCriteria)  {
         // Grab and sort all files within file size policy range
         if (p->type.compare("sizepolicy") == 0) {
             SizePolicy* sp = (SizePolicy*) p;
-            inSizeRange = RS.getFilesOutOfSizeRange(*sp);
+            inSizeRange = RS.getFilesInSizeRange(*sp);
+            fileLists.push_back(inSizeRange);
         }
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
             TimePolicy* tp = (TimePolicy*) p;
             inTimeRange = RS.getFilesOutOfLastModifiedTime(*tp);
+            fileLists.push_back(inTimeRange);
         }
         // Grab and sort all files within times accessed range
         else if (p->type.compare("hitspolicy") == 0) {
             HitPolicy* hp = (HitPolicy*) p;
             inHitsRange = RS.getFilesOutOfTimesAccessedRange(*hp);
+            fileLists.push_back(inHitsRange);
         }
     } 
     // Grab and sort all files that are not local
     isNonLocal = RS.getNonLocalFiles();
+
+    fileLists.push_back(isNonLocal);
+
     
     for (FileData fd: inSizeRange) {
         string local = "Size file: " + fd.fileName;
@@ -278,9 +298,9 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
     }
 
     // Find the intersection of the promotion policies
-    vector<vector<FileData>> fileLists = {isNonLocal, inSizeRange, inTimeRange, inHitsRange};
     promotionList = findIntersection(fileLists, intersection, i);
 
+    syslog(LOG_NOTICE, "Promotion Intersection files: ");
     // Print files to promote
     for (int i=0; i<promotionList.size(); i++)
     {

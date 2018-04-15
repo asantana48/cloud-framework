@@ -4,7 +4,7 @@
 		<policy type="sizepolicy">
 			<name>size</name>
 			<lowerbound>0</lowerbound>
-			<upperbound>50</upperbound>
+			<upperbound>25</upperbound>
 		</policy>
 	</policylist>
 </policyfile>

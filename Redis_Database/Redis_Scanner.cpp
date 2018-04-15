@@ -90,14 +90,14 @@ vector<FileData> Redis_Scanner::getFilesInSizeRange(SizePolicy policy)
 
 vector<FileData> Redis_Scanner::getFilesOutOfSizeRange(SizePolicy policy)
 {
-	int lowLimit = policy.getLowThreshold();
-	int highLimit = policy.getHighThreshold();
+	string lowLimit = "(" + to_string(policy.getLowThreshold());
+	string highLimit = "(" + to_string(policy.getHighThreshold());
 	Redox rdx;
 	vector<FileData> files;
 	rdx.connect("localhost", 6379);
 
 	// Grab all files with a size less than the lowLimit
-	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", "-inf", to_string(lowLimit)});
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", "-inf", lowLimit});
 	vector<string> temp(c.reply());
 	Redis_Client RC;
 	for (int i=0; i< temp.size(); i++)
@@ -106,7 +106,7 @@ vector<FileData> Redis_Scanner::getFilesOutOfSizeRange(SizePolicy policy)
 	}
 
 	// Grab all files with a size greater than the highLimit 
-	Command<vector<string>>& c1 = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", to_string(highLimit), "+inf"});
+	Command<vector<string>>& c1 = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "File_Size", highLimit, "+inf"});
 	vector<string> temp1(c1.reply());
 	for (int i=0; i< temp1.size(); i++)
 	{
