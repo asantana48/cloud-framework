@@ -33,9 +33,6 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
 vector<FileData> getDemotionList(list<Policy*> policyCriteria);
 vector<FileData> getPromotionList(list<Policy*> policyCriteria);
 
-// Bucket that we'll be using
-const std::string BUCKET = "devon-bucket";
-
 
 int main(int argc, char** argv)
 {
