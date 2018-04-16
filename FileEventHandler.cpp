@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -133,6 +135,7 @@ void FileEventHandler::initializeINotify()
 						if (fd.isMetadata) {
 							cout << "request\n";
 							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);  
+							this_thread::sleep_for (chrono::seconds(1));
 						} 
 						else {
 							RC.setIsMetadata(fd.localURI, true);
