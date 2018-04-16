@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "lib/AWSConnector.hpp"
+#include "lib/Constants.hpp"
 
 
 using namespace std;
@@ -9,37 +10,42 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	std::string region = "us-east-2";
-	std::string bucket = "devon-bucket";
 	
 	AWSConnector aws;
 	aws.connect(region);
 
-	cout << "BUCKETS\n";
-	for (auto const &b: aws.listBuckets()) {
-		cout << b << endl;
-	}
-	cout << endl;
-
-	cout << "OBJECTS in devon-bucket\n";
-	for (auto &b: aws.listBucketContents("devon-bucket"))
-		cout << b << endl;
-	cout << endl;
-
 	
+	if (argc == 1) {
+		cout << "BUCKETS\n";
+		for (auto const &b: aws.listBuckets()) {
+			cout << b << endl;
+		}
+		cout << endl;
+	}
 	for (int i = 0; i < argc; ++i) 
 	{
 		std::string prefix = "/testbed/";
-		if (0 == strcmp(argv[i], "delete") && i+1 < argc)	{
+		if(0 == strcmp(argv[i], "put") && i+1 < argc)	{
+			cout << "Putting object\n";
+			aws.putObject(BUCKET, prefix + argv[i+1], argv[i+1]);
+		}		
+		else if(0 == strcmp(argv[i], "delete") && i+1 < argc)	{
 			cout << "Deleting object\n";
-			aws.deleteObject("devon-bucket", prefix + argv[i+1]);
+			aws.deleteObject(BUCKET, prefix + argv[i+1]);
 		}
 		else if (0 == strcmp(argv[i], "promote")  && i+1 < argc) {
 			cout << "Promoting object\n";
-			aws.promoteObject("devon-bucket", argv[i+1], prefix + argv[i+1]);
+			aws.promoteObject(BUCKET, argv[i+1], prefix + argv[i+1]);
 		}
 		else if (0 == strcmp(argv[i], "demote")  && i+1 < argc) {
 			cout << "Demoting object\n";
-			aws.demoteObject("devon-bucket", prefix +argv[i+1], argv[i+1]);
+			aws.demoteObject(BUCKET, prefix +argv[i+1], argv[i+1]);
+		}
+		else if (0 == strcmp(argv[i], "list")) {
+			cout << "OBJECTS in chosen bucket\n";
+			for (auto &b: aws.listBucketContents(BUCKET))
+				cout << b << endl;
+			cout << endl;
 		}
 	}
 
