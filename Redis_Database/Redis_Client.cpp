@@ -61,8 +61,6 @@ FileData Redis_Client::Redis_HGETALL(string key)
 	rdx.connect("localhost", 6379);
 	
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"HGETALL", key});
-	
-	cout << "HERE!!!!!";
 	vector<string> metaData = c.reply();
 	FileData file;
 	
