@@ -108,6 +108,7 @@ void FileEventHandler::initializeINotify()
 				// If a file is opened, increment "Times_Accessed" in database
 				if (event->mask & IN_OPEN)
 				{
+					cout << "open\n";
 					
 					/*FileData fd = RC.Redis_HGETALL(key);
 					int pos;
@@ -119,46 +120,53 @@ void FileEventHandler::initializeINotify()
 					RC.setIsLocal(key, true);
 					RC.setIsMetadata(k, false);
 					RC.incrementTimesAccessed(key);*/
+
+					cout << "open_done\n";
 				}
 
 				// If a file is created in the watched directory, add its local URI to the database
 				if (event->mask & IN_CREATE)
 				{
-					
+					cout << "create\n";
 					FileData fd = RC.Redis_HGETALL(key);
 
 					if (fd.fileName.empty())
 					{
 						newFileDataObject(event->name);
 					}
-
+					cout << "create_done\n";
 				}
 
 				// If a file is deleted, remove its local URI from the database
 				if (event->mask & IN_DELETE)
 				{
+					cout << "delete\n";
 					FileData fd = RC.Redis_HGETALL(key);
 					if (!fd.isMetadata)
 					{
 						RS.deleteFileFromAllSets(fd);
 						RC.Redis_DEL(key);
 					}
+					cout << "delete_done\n";
 				}
 
 				// If a file is modified, update its size and last modified time
 				if (event->mask & IN_MODIFY)
 				{
+					cout << "modify\n";
 					FileData fd = RC.Redis_HGETALL(key);
 					if (!fd.isMetadata) {
 						struct stat statObj;
 						stat(key.c_str(), &statObj);
 						RC.setFileSize(key, statObj.st_size);
 					}
+					cout << "modify_done\n";
 				}
 
 				// If a file is moved or renamed, this will grab the new name of the file
 				if (event->mask & IN_MOVED_TO)
 				{
+					cout << "moveto\n";
 					if (strcmp(oldFileName.c_str(), "") != 0)
 					{
 						RC.Redis_RENAME(oldFileName, key);
@@ -166,15 +174,18 @@ void FileEventHandler::initializeINotify()
 					}
 
 					oldFileName = "";
+					cout << "moveto_done\n";
 				}
 
 				// If a file is moved or renamed, this will grab the old name of the file
 				if (event->mask & IN_MOVED_FROM)
 				{
+					cout << "movefrom\n";
 					if (strcmp(oldFileName.c_str(), "") == 0)
 					{
 						oldFileName = key;
 					}
+					cout << "movefrom_done\n";
 				}
 			}
 		}
