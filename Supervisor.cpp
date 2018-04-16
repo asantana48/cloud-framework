@@ -18,6 +18,8 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 std::atomic_bool ready;
@@ -106,29 +108,25 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                         fd.remoteURI = fd.fileName; 
                     }
                     
-                    //tempFD = fd;
+                    tempFD = fd;
 
                     // Demotion
                     aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
                     syslog(LOG_NOTICE, "File demoted:");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
-                    syslog(LOG_NOTICE, "BREAK!");
-                    // Update the entry in the database with the demoted file's metadata
-                    RC.Redis_HMSET(fd);
-                    syslog(LOG_NOTICE, "BREAK!");
+                    this_thread::sleep_for (chrono::seconds(1));
 
-                    RC.setIsMetadata(fd.localURI, true);
-                    syslog(LOG_NOTICE, "BREAK!");
-                    RC.setIsLocal(fd.localURI, false);     
-                    syslog(LOG_NOTICE, "BREAK!");               
+                    tempFD.isLocal = false;
+                    tempFD.isMetadata = true;
+
+                    // Update the entry in the database with the demoted file's metadata
+                    RC.Redis_HMSET(tempFD);          
 
                     // Create a copy of the demoted file
                     ofstream newFile(fd.localURI);
-                    syslog(LOG_NOTICE, "BREAK!");
 
                     newFile << "This is a metadata stub for " << fd.fileName;
-                    syslog(LOG_NOTICE, "BREAK!");
 
                     newFile.close();
 

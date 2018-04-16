@@ -122,37 +122,31 @@ void FileEventHandler::initializeINotify()
 				}
 
 				// If a file is created in the watched directory, add its local URI to the database
-				else if (event->mask & IN_CREATE)
+				if (event->mask & IN_CREATE)
 				{
+					
 					FileData fd = RC.Redis_HGETALL(key);
 
-					if (fd.isMetadata)
-					{
-						cout << key << " ALREADY EXISTS AS METADATA!\n";
-					}
-					else
+					if (fd.fileName.empty())
 					{
 						newFileDataObject(event->name);
 					}
+
 				}
 
 				// If a file is deleted, remove its local URI from the database
-				else if (event->mask & IN_DELETE)
+				if (event->mask & IN_DELETE)
 				{
-					cout << "BREAK2!\n";
 					FileData fd = RC.Redis_HGETALL(key);
-					cout << "BREAK2!\n";
 					if (!fd.isMetadata)
 					{
-						cout << "BREAK2!\n";
 						RS.deleteFileFromAllSets(fd);
 						RC.Redis_DEL(key);
 					}
-					cout << "BREAK2!\n";
 				}
 
 				// If a file is modified, update its size and last modified time
-				else if (event->mask & IN_MODIFY)
+				if (event->mask & IN_MODIFY)
 				{
 					FileData fd = RC.Redis_HGETALL(key);
 					if (!fd.isMetadata) {
@@ -163,7 +157,7 @@ void FileEventHandler::initializeINotify()
 				}
 
 				// If a file is moved or renamed, this will grab the new name of the file
-				else if (event->mask & IN_MOVED_TO)
+				if (event->mask & IN_MOVED_TO)
 				{
 					if (strcmp(oldFileName.c_str(), "") != 0)
 					{
@@ -175,7 +169,7 @@ void FileEventHandler::initializeINotify()
 				}
 
 				// If a file is moved or renamed, this will grab the old name of the file
-				else if (event->mask & IN_MOVED_FROM)
+				if (event->mask & IN_MOVED_FROM)
 				{
 					if (strcmp(oldFileName.c_str(), "") == 0)
 					{

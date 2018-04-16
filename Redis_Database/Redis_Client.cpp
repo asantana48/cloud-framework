@@ -64,6 +64,13 @@ FileData Redis_Client::Redis_HGETALL(string key)
 	vector<string> metaData = c.reply();
 	FileData file;
 
+	if(metaData.empty())
+	{
+		file.fileName = "";
+		return file;
+	}
+
+
 	file.localURI = key;
 	file.fileName = metaData[1];
 	file.remoteURI = metaData[3];
@@ -71,6 +78,7 @@ FileData Redis_Client::Redis_HGETALL(string key)
 	file.timesAccessed = stoi(metaData[7]);
 	file.lastModified = stringToTime_t(metaData[9]);
 	file.isLocal = stoi(metaData[11]);
+	file.isMetadata = stoi(metaData[13]);
 
 	c.free();
 	rdx.disconnect();
