@@ -118,8 +118,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     this_thread::sleep_for (chrono::seconds(1));
 
                     tempFD.isLocal = false;
-                    tempFD.isMetadata = true;
-
+                    tempFD.isMetadata = false;
+                    
                     // Update the entry in the database with the demoted file's metadata
                     RC.Redis_HMSET(tempFD);          
 
@@ -129,7 +129,6 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     newFile << "This is a metadata stub for " << fd.fileName;
 
                     newFile.close();
-
 
                 }
 

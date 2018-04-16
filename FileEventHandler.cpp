@@ -121,19 +121,24 @@ void FileEventHandler::initializeINotify()
 					cout << "create_done\n";
 				}
 				// If a file is opened, increment "Times_Accessed" in database
+				cout << "event\n";
 				if (event->mask & IN_OPEN) 
 				{
 					cout << "open\n";
 				
 					FileData fd = RC.Redis_HGETALL(key);
 					int pos;
-					if (fd.isMetadata == true)
+					if (!fd.isLocal)
 					{
-						cout << "request\n";
-						aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);  
-						RC.Redis_DEL(fd.localURI);
-						RC.Redis_HMSET(fd);
-					}					
+						if (fd.isMetadata) {
+							cout << "request\n";
+							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);  
+						} 
+						else {
+							RC.setIsMetadata(fd.localURI, true);
+						}
+					}
+									
 					cout << "open_done\n";
 				}
 
@@ -143,12 +148,11 @@ void FileEventHandler::initializeINotify()
 				{
 					cout << "delete\n";
 					FileData fd = RC.Redis_HGETALL(key);
-					if (!fd.isMetadata)
-					{
-						cout << "DELETING\n";
-						RS.deleteFileFromAllSets(fd);
-						RC.Redis_DEL(key);
-					}
+			
+					cout << "DELETING\n";
+					RS.deleteFileFromAllSets(fd);
+					RC.Redis_DEL(key);
+					
 					cout << "delete_done\n";
 				}
 
@@ -190,6 +194,7 @@ void FileEventHandler::initializeINotify()
 					}
 					cout << "movefrom_done\n";
 				}
+
 			}
 		}
 	}
