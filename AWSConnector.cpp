@@ -40,6 +40,8 @@ bool AWSConnector::getObject(std::string bucket, std::string source, std::string
 
     if (outcome.IsSuccess())
     {
+        //std::string result = outcome.GetResult().GetBody().rdbuf();
+
         Aws::OFStream local_file;
         local_file.open(destination.c_str(), std::ios::out | std::ios::binary);
         local_file << outcome.GetResult().GetBody().rdbuf();

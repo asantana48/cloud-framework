@@ -28,17 +28,18 @@ int main(int argc, char* argv[])
 	
 	for (int i = 0; i < argc; ++i) 
 	{
-		if (0 == strcmp(argv[i], "delete"))	{
+		std::string prefix = "/testbed/";
+		if (0 == strcmp(argv[i], "delete") && i+1 < argc)	{
 			cout << "Deleting object\n";
-			aws.deleteObject("devon-bucket", "AWSTester.cpp");
+			aws.deleteObject("devon-bucket", prefix + argv[i+1]);
 		}
-		else if (0 == strcmp(argv[i], "promote")) {
+		else if (0 == strcmp(argv[i], "promote")  && i+1 < argc) {
 			cout << "Promoting object\n";
-			aws.promoteObject("devon-bucket", "small_old", "testbed/volatile_1_byte.txt");
+			aws.promoteObject("devon-bucket", argv[i+1], prefix + argv[i+1]);
 		}
-		else if (0 == strcmp(argv[i], "demote")) {
+		else if (0 == strcmp(argv[i], "demote")  && i+1 < argc) {
 			cout << "Demoting object\n";
-			aws.demoteObject("devon-bucket", "testbed/small_old", "small_old");
+			aws.demoteObject("devon-bucket", prefix +argv[i+1], argv[i+1]);
 		}
 	}
 

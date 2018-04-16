@@ -8,3 +8,6 @@ supervise : Supervisor.cpp
 
 recall : Recall.cpp
 	g++ -o recall Recall.cpp AWSConnector.cpp Redis_Database/Redis_Client.cpp Redis_Database/Redis_Scanner.cpp $(CXXFLAGS)
+
+awstest : AWSTester.cpp
+	g++ -o recall AWSTester.cpp AWSConnector.cpp $(CXXFLAGS)
