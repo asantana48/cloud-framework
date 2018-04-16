@@ -24,7 +24,11 @@ int main(int argc, char* argv[])
 	}
 	for (int i = 0; i < argc; ++i) 
 	{
-		std::string prefix = "/testbed/";
+		std::string prefix = "testbed/";
+		if(0 == strcmp(argv[i], "get") && i+1 < argc)	{
+			cout << "Getting object\n";
+			aws.getObject(BUCKET, argv[i+1], prefix + argv[i+1]);
+		}		
 		if(0 == strcmp(argv[i], "put") && i+1 < argc)	{
 			cout << "Putting object\n";
 			aws.putObject(BUCKET, prefix + argv[i+1], argv[i+1]);
@@ -48,6 +52,7 @@ int main(int argc, char* argv[])
 			cout << endl;
 		}
 	}
+	cout << "Done.\n";
 
 	return 0;
 }
