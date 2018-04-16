@@ -59,30 +59,25 @@ FileData Redis_Client::Redis_HGETALL(string key)
 {
 	Redox rdx;
 	rdx.connect("localhost", 6379);
+	
 	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"HGETALL", key});
 	
+	cout << "HERE!!!!!";
 	vector<string> metaData = c.reply();
 	FileData file;
-
-	if(metaData.empty())
-	{
-		file.fileName = "";
-		return file;
+	
+	if (!metaData.empty()) {
+		file.localURI = key;
+		file.fileName = metaData[1];
+		file.remoteURI = metaData[3];
+		file.fileSize = stoi(metaData[5]);
+		file.timesAccessed = stoi(metaData[7]);
+		file.lastModified = stringToTime_t(metaData[9]);
+		file.isLocal = stoi(metaData[11]);
+		file.isMetadata = stoi(metaData[13]);
 	}
-
-
-	file.localURI = key;
-	file.fileName = metaData[1];
-	file.remoteURI = metaData[3];
-	file.fileSize = stoi(metaData[5]);
-	file.timesAccessed = stoi(metaData[7]);
-	file.lastModified = stringToTime_t(metaData[9]);
-	file.isLocal = stoi(metaData[11]);
-	file.isMetadata = stoi(metaData[13]);
-
 	c.free();
 	rdx.disconnect();
-
 	return file;
 }
 
