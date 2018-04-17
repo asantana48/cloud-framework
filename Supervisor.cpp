@@ -117,46 +117,44 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 
                     //this_thread::sleep_for (chrono::milliseconds(500));
                     syslog(LOG_NOTICE, "File demoted now!");
-                    this_thread::sleep_for (chrono::seconds(5));  
-
 
                     RC.Redis_HMSET(tempFD);
 
 
 
                     syslog(LOG_NOTICE, "Database updated");
-                    this_thread::sleep_for (chrono::seconds(5));  
+                    this_thread::sleep_for (chrono::milliseconds(500));  
                     // this_thread::sleep_for (chrono::milliseconds(500)); 
                           
                     RC.setIsMetadata(tempFD.localURI, true);
                     syslog(LOG_NOTICE, "Metadata flag set to true");
-                    this_thread::sleep_for (chrono::seconds(5));
-                    // this_thread::sleep_for (chrono::milliseconds(500));
+                    // this_thread::sleep_for (chrono::seconds(5));
+                    this_thread::sleep_for (chrono::milliseconds(500));
 
                     // Create a copy of the demoted file
                     ofstream newFile(tempFD.localURI);
 
-                    syslog(LOG_NOTICE, "Metadata created!");
-                    this_thread::sleep_for (chrono::seconds(5));
+                    // syslog(LOG_NOTICE, "Metadata created!");
+                    // this_thread::sleep_for (chrono::seconds(5));
 
                     newFile << "This is a metadata stub for " << fd.fileName;
 
-                    syslog(LOG_NOTICE, "Words written to metadata file");
-                    this_thread::sleep_for (chrono::seconds(5));
+                    // syslog(LOG_NOTICE, "Words written to metadata file");
+                    // this_thread::sleep_for (chrono::seconds(5));
 
                     newFile.close();
 
                     syslog(LOG_NOTICE, "new file closed!");
-                    this_thread::sleep_for (chrono::seconds(5));
-                    //this_thread::sleep_for (chrono::milliseconds(500));
+                    // this_thread::sleep_for (chrono::seconds(5));
+                    // this_thread::sleep_for (chrono::milliseconds(500));
 
                     // Update the entry in the database with the demoted file's metadata
                     RC.setIsLocal(tempFD.localURI, false); 
 
 
                      syslog(LOG_NOTICE, "local flag set to false");
-                     this_thread::sleep_for (chrono::seconds(5));
-                    //this_thread::sleep_for (chrono::milliseconds(500));
+                    // this_thread::sleep_for (chrono::seconds(5));
+                    this_thread::sleep_for (chrono::milliseconds(500));
                 }
 
                 demotionList.clear();

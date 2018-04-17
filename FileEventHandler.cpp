@@ -134,7 +134,11 @@ void FileEventHandler::initializeINotify()
 					{
 						if (RC.getIsMetadata(key)) {
 							cout << "REQUEST\n";
-							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);  
+							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI); 
+							cout << "File promoted: " << fd.localURI << endl;
+							RC.setRemoteURI(fd.localURI, "");
+                    		RC.setIsLocal(fd.localURI, true);
+                    		RC.setIsMetadata(fd.localURI, false); 
 							this_thread::sleep_for (chrono::seconds(1));
 						} 
 					}
