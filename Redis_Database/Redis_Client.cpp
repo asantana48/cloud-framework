@@ -202,10 +202,13 @@ int Redis_Client::getTimesAccessed(string key)
 void Redis_Client::setIsLocal(string key, bool isLocal)
 {
 	Redox rdx;
+	Redis_Scanner RS;
 	rdx.connect("localhost", 6379);
 	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Is_Local", to_string(isLocal)});
 	c.free();
 	rdx.disconnect();
+	FileData fd = Redis_HGETALL(key);
+	RS.updateFileInIsLocalList(fd);
 	updateLastTimeModified(key);
 }
 

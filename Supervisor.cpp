@@ -100,7 +100,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             {
                 vector<FileData> demotionList = getDemotionList(p);
                 syslog(LOG_NOTICE, "----------DEMOTION START----------");
-                for (auto fd: demotionList) {
+                for (FileData fd: demotionList) {
                     syslog(LOG_NOTICE, "Demoting file: ");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
                     if (fd.remoteURI == "") {
@@ -115,26 +115,55 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     syslog(LOG_NOTICE, "File demoted:");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
-                    this_thread::sleep_for (chrono::seconds(1));
+                    //this_thread::sleep_for (chrono::milliseconds(500));
+                    syslog(LOG_NOTICE, "File demoted now!");
+                    this_thread::sleep_for (chrono::seconds(5));  
 
-                    tempFD.isLocal = false;
-                    tempFD.isMetadata = false;
-                    
-                    // Update the entry in the database with the demoted file's metadata
-                    RC.Redis_HMSET(tempFD);          
+
+                    RC.Redis_HMSET(tempFD);
+
+
+
+                    syslog(LOG_NOTICE, "Database updated");
+                    this_thread::sleep_for (chrono::seconds(5));  
+                    // this_thread::sleep_for (chrono::milliseconds(500)); 
+                          
+                    RC.setIsMetadata(tempFD.localURI, true);
+                    syslog(LOG_NOTICE, "Metadata flag set to true");
+                    this_thread::sleep_for (chrono::seconds(5));
+                    // this_thread::sleep_for (chrono::milliseconds(500));
 
                     // Create a copy of the demoted file
-                    ofstream newFile(fd.localURI);
+                    ofstream newFile(tempFD.localURI);
+
+                    syslog(LOG_NOTICE, "Metadata created!");
+                    this_thread::sleep_for (chrono::seconds(5));
 
                     newFile << "This is a metadata stub for " << fd.fileName;
 
+                    syslog(LOG_NOTICE, "Words written to metadata file");
+                    this_thread::sleep_for (chrono::seconds(5));
+
                     newFile.close();
 
+                    syslog(LOG_NOTICE, "new file closed!");
+                    this_thread::sleep_for (chrono::seconds(5));
+                    //this_thread::sleep_for (chrono::milliseconds(500));
+
+                    // Update the entry in the database with the demoted file's metadata
+                    RC.setIsLocal(tempFD.localURI, false); 
+
+
+                     syslog(LOG_NOTICE, "local flag set to false");
+                     this_thread::sleep_for (chrono::seconds(5));
+                    //this_thread::sleep_for (chrono::milliseconds(500));
                 }
 
                 demotionList.clear();
                 syslog(LOG_NOTICE, "----------DEMOTION END----------");
             }
+            syslog(LOG_NOTICE, "waiting...");
+            this_thread::sleep_for (chrono::seconds(5));
             // Promote files
             syslog(LOG_NOTICE, "Querying database for promotion candidates.");
             for (auto p : pm.getPolicyList())
@@ -142,6 +171,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                 vector<FileData> promotionList = getPromotionList(p);
                 syslog(LOG_NOTICE, "----------PROMOTION START----------");
                 for (FileData fd: promotionList) {
+                    syslog(LOG_NOTICE, "Promoting file: ");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
                     // Promotion
@@ -152,10 +182,10 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     // Update the database
                     RC.setRemoteURI(fd.localURI, "");
                     
-                    fd.isLocal = true;
-
-                    RS.updateFileInIsLocalList(fd);
+                    RC.setIsLocal(fd.localURI, true);
+                    RC.setIsMetadata(fd.localURI, false);
                 }
+                promotionList.clear();
             }
 
             syslog(LOG_NOTICE, "----------PROMOTION END----------");

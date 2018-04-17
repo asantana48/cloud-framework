@@ -122,24 +122,21 @@ void FileEventHandler::initializeINotify()
 					}
 					cout << "create_done\n";
 				}
+
 				// If a file is opened, increment "Times_Accessed" in database
-				cout << "event\n";
 				if (event->mask & IN_OPEN) 
 				{
-					cout << "open\n";
-				
 					FileData fd = RC.Redis_HGETALL(key);
+					cout << "open\n";
+					cout << key << endl;
 					int pos;
-					if (!fd.isLocal)
+					if (!RC.getIsLocal(key))
 					{
-						if (fd.isMetadata) {
-							cout << "request\n";
+						if (RC.getIsMetadata(key)) {
+							cout << "REQUEST\n";
 							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI);  
 							this_thread::sleep_for (chrono::seconds(1));
 						} 
-						else {
-							RC.setIsMetadata(fd.localURI, true);
-						}
 					}
 									
 					cout << "open_done\n";
