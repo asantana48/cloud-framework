@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <stdlib.h>
 
 using namespace std;
 const string TAB = "        ";
@@ -37,11 +38,25 @@ int main()
 				string sizePolicyName;
 				cin >> sizePolicyName;
 				cout << "Enter the lower bound for the size policy in bytes: ";
-				int lowerBound;
+				long long lowerBound;
 				cin >> lowerBound;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> lowerBound;
+				}
 				cout << "Enter the upper bound for the size policy in bytes: ";
-				int upperBound;
+				long long upperBound;
 				cin >> upperBound;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> upperBound;
+				}
 				cout << endl;
 
 				myfile << TAB << TAB << "<policy type=\"sizepolicy\">\n";
@@ -59,6 +74,13 @@ int main()
 				cout << "Enter the minimum number of hits for migration: ";
 				int numHits;
 				cin >> numHits;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> numHits;
+				}
 				cout << endl;
 
 				myfile << TAB << TAB << "<policy type=\"hitspolicy\">\n";
@@ -76,21 +98,63 @@ int main()
 				cout << "Years: ";
 				int years;
 				cin >> years;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> years;
+				}
 				cout << "Months: ";
 				int months;
 				cin >> months;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> months;
+				}
 				cout << "Days: ";
 				int days;
 				cin >> days;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> days;
+				}
 				cout << "Hours: ";
 				int hours;
 				cin >> hours;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> hours;
+				}
 				cout << "Minutes: ";
 				int minutes;
 				cin >> minutes;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> minutes;
+				}
 				cout << "Seconds: ";
 				int seconds;
 				cin >> seconds;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> seconds;
+				}
 				cout << endl;
 
 
@@ -114,6 +178,7 @@ int main()
 			while (choice != 'y' && choice != 'n' && choice != 'Y' && choice != 'N')
 			{
 				cin >> choice;
+
 				if (choice == 'y')
 				{
 					createNewPolicy = true;
@@ -162,6 +227,18 @@ int main()
 
 	cout << "\nOutput policies xml file to local directory.";
 
+
+
+
+	system("cp policies.xml ..;rm -r policies.xml; cd ..;mkdir res;mv policies.xml ./res;echo Success");
+	/*system("cd ..");
+	system("mkdir res");
+	system("mv policies.xml ./res");
+	system("echo Policies.xml copied to res folder.");*/
+	cout << endl;
+	
+
+
 	return 0;
 }
 
@@ -174,12 +251,10 @@ int main()
 			<lowerbound>52</lowerbound>
 			<upperbound>135</upperbound>
 		</policy>
-
 		<policy type="hitspolicy">
 			<name>MyHitsPolicy</name>
 			<minimumhits>24</minimumhits>
 		</policy>
-
 		<policy type="timepolicy">
 			<name>MyTimePolicy</name>
 			<years>1</years>
@@ -190,25 +265,21 @@ int main()
 			<seconds>0</seconds>
 		</policy>
 	</policylist>
-
 	<policylist>
 		<policy type="sizepolicy">
 			<name>size2</name>
 			<lowerbound>20</lowerbound>
 			<upperbound>180</upperbound>
 		</policy>
-
 		<policy type="hitspolicy">
 			<name>hitz2</name>
 			<minimumhits>24</minimumhits>
 		</policy>
-
 		<policy type="timepolicy">
 			<name>timepol2</name>
 			<hours>7</hours>
 			<seconds>4</seconds>
 		</policy>
 	</policylist>
-
 </policyfile>
 */

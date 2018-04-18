@@ -51,6 +51,12 @@ int main(int argc, char* argv[])
 				cout << b << endl;
 			cout << endl;
 		}
+		else if (0 == strcmp(argv[i], "ping")) {
+			if (aws.existsObject(BUCKET, argv[i+1]))
+				cout << argv[i+1] << " exists!\n";
+			else 
+				cout << argv[i+1] << " does not exist.\n";
+		}
 	}
 	cout << "Done.\n";
 

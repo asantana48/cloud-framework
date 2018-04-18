@@ -18,6 +18,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <ctime>
 #include <thread>
 #include <chrono>
 
@@ -88,7 +89,7 @@ void updatePolicies(PolicyManager& pm, int time) {
     }
 }
 
-void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
+void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     Redis_Client RC;
     Redis_Scanner RS;
     FileData tempFD;
@@ -107,8 +108,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                         syslog(LOG_NOTICE, "%s IS CURRENTLY OPEN! SKIPPING DEMOTION", fd.fileName);
                     }
 
-                    else
-                    {
+                    // Do not bounce back if under 5 minutes old
+                    else if (time(NULL) - fd.lastModified > 30) {
                         syslog(LOG_NOTICE, "Demoting file: ");
                         syslog(LOG_NOTICE, fd.fileName.c_str());
                         if (fd.remoteURI == "") {
@@ -130,6 +131,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 
 
 
+
                         syslog(LOG_NOTICE, "Database updated"); 
                         this_thread::sleep_for (chrono::milliseconds(1000)); 
                               
@@ -142,7 +144,6 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 
                         // newFile << "This is a metadata stub for " << fd.fileName;
 
-
                         newFile.close();
 
                         syslog(LOG_NOTICE, "new file closed!");
@@ -152,8 +153,13 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 
 
                         syslog(LOG_NOTICE, "local flag set to false");
+
+                        // this_thread::sleep_for (chrono::seconds(5));
                         this_thread::sleep_for (chrono::milliseconds(500));
                     }
+                    
+                    else
+                        syslog(LOG_NOTICE, "Bounceback prevented on %s.", fd.fileName.c_str());
                 }
 
                 demotionList.clear();
@@ -186,7 +192,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
             }
 
             syslog(LOG_NOTICE, "----------PROMOTION END----------");
-            sleep(time);
+            sleep(migrateTime);
         }
     }
 }

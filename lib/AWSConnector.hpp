@@ -47,6 +47,7 @@ public:
 	bool demoteObject(std::string bucket, std::string object);
 	
 	// Information retrieval functions
+	bool existsObject(std::string bucket, std::string object);
 	std::list<std::string> listBuckets();
 	std::list<std::string> listBucketContents(std::string bucket);
 	// std::list<string> listAllObjects();
