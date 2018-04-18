@@ -18,7 +18,7 @@ void Redis_Client::Redis_HMSET(FileData& file)
 {	
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	Command<string>& c = rdx.commandSync<string>({"HMSET", file.localURI, "File_Name", file.fileName, "Remote_URI", file.remoteURI, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal), "Is_Metadata", to_string(file.isMetadata)});
+	Command<string>& c = rdx.commandSync<string>({"HMSET", file.localURI, "File_Name", file.fileName, "Remote_URI", file.remoteURI, "File_Size", to_string(file.fileSize), "Times_Accessed", to_string(file.timesAccessed), "Last_Modified", ctime (&file.lastModified), "Is_Local", to_string(file.isLocal), "Is_Metadata", to_string(file.isMetadata), "Is_Open", to_string(file.isOpen)});
 	if(c.ok()) {
 		cout << file.fileName << " successfully added to the database!\n";
 		Redis_Scanner RS;
@@ -74,6 +74,7 @@ FileData Redis_Client::Redis_HGETALL(string key)
 		file.lastModified = stringToTime_t(metaData[9]);
 		file.isLocal = stoi(metaData[11]);
 		file.isMetadata = stoi(metaData[13]);
+		file.isOpen = stoi(metaData[15]);
 	}
 	c.free();
 	rdx.disconnect();
@@ -244,6 +245,30 @@ bool Redis_Client::getIsMetadata(string key)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Is_Metadata"});
+	if(!c.ok()) {
+		cout << "Command has error code " << c.reply() << endl;
+	}
+	int answer = stoi(c.reply());
+	c.free();
+	rdx.disconnect();
+	if (answer == 1){ return true;}
+	else {return false;}
+}
+
+void Redis_Client::setIsOpen(string key, bool isOpen)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Is_Open", to_string(isOpen)});
+	c.free();
+	rdx.disconnect();
+}
+
+bool Redis_Client::getIsOpen(string key)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Is_Open"});
 	if(!c.ok()) {
 		cout << "Command has error code " << c.reply() << endl;
 	}

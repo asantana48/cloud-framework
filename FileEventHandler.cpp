@@ -142,7 +142,10 @@ void FileEventHandler::initializeINotify()
 							this_thread::sleep_for (chrono::seconds(1));
 						} 
 					}
-									
+
+					RC.setIsOpen(key, true);
+					RC.incrementTimesAccessed(key);
+
 					cout << "open_done\n";
 				}
 
@@ -164,8 +167,7 @@ void FileEventHandler::initializeINotify()
 				if (event->mask & IN_MODIFY)
 				{
 					cout << "modify\n";
-					FileData fd = RC.Redis_HGETALL(key);
-					if (!fd.isMetadata) {
+					if (!RC.getIsMetadata(key)) {
 						cout << "MODIFYING\n";
 						struct stat statObj;
 						stat(key.c_str(), &statObj);
@@ -198,6 +200,23 @@ void FileEventHandler::initializeINotify()
 					}
 					cout << "movefrom_done\n";
 				}
+
+				if ((event->mask & IN_CLOSE_WRITE) || (event->mask & IN_CLOSE_NOWRITE))
+				{
+					if(event->mask & IN_CLOSE_WRITE)
+					{
+						RC.setIsOpen(key, false);
+						cout << "CLOSE WRITE\n";
+					}
+					if(event->mask & IN_CLOSE_NOWRITE)
+					{
+						RC.setIsOpen(key, false);
+						cout << "CLOSE NO WRITE\n";
+					}
+					cout << "FILE CLOSED!\n";
+
+				}
+				cout << event->mask << endl;
 
 			}
 		}
