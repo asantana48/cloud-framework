@@ -56,6 +56,15 @@ bool AWSConnector::getObject(std::string bucket, std::string source, std::string
     }
 }
 
+bool AWSConnector::existsObject(std::string bucket, std::string object) 
+{
+    Aws::S3::Model::GetObjectRequest req;
+    req.WithBucket(bucket.c_str()).WithKey(object.c_str());
+
+    auto outcome = client->GetObject(req);
+    return outcome.IsSuccess();
+}
+
 bool AWSConnector::putObject(std::string bucket, std::string source, std::string destination)
 {
     Aws::S3::Model::PutObjectRequest req;
