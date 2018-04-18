@@ -38,11 +38,25 @@ int main()
 				string sizePolicyName;
 				cin >> sizePolicyName;
 				cout << "Enter the lower bound for the size policy in bytes: ";
-				int lowerBound;
+				long long lowerBound;
 				cin >> lowerBound;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> lowerBound;
+				}
 				cout << "Enter the upper bound for the size policy in bytes: ";
-				int upperBound;
+				long long upperBound;
 				cin >> upperBound;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> upperBound;
+				}
 				cout << endl;
 
 				myfile << TAB << TAB << "<policy type=\"sizepolicy\">\n";
@@ -60,6 +74,13 @@ int main()
 				cout << "Enter the minimum number of hits for migration: ";
 				int numHits;
 				cin >> numHits;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> numHits;
+				}
 				cout << endl;
 
 				myfile << TAB << TAB << "<policy type=\"hitspolicy\">\n";
@@ -77,21 +98,63 @@ int main()
 				cout << "Years: ";
 				int years;
 				cin >> years;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> years;
+				}
 				cout << "Months: ";
 				int months;
 				cin >> months;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> months;
+				}
 				cout << "Days: ";
 				int days;
 				cin >> days;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> days;
+				}
 				cout << "Hours: ";
 				int hours;
 				cin >> hours;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> hours;
+				}
 				cout << "Minutes: ";
 				int minutes;
 				cin >> minutes;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> minutes;
+				}
 				cout << "Seconds: ";
 				int seconds;
 				cin >> seconds;
+				while (cin.fail())
+				{
+					cin.clear();
+					cin.ignore();
+					cout << "\nPlease enter a number: ";
+					cin >> seconds;
+				}
 				cout << endl;
 
 
@@ -115,6 +178,7 @@ int main()
 			while (choice != 'y' && choice != 'n' && choice != 'Y' && choice != 'N')
 			{
 				cin >> choice;
+
 				if (choice == 'y')
 				{
 					createNewPolicy = true;
@@ -166,7 +230,11 @@ int main()
 
 
 
-	system("cp policies.xml ..;cd ..;mkdir res;mv policies.xml ./res;echo Moved policies.xml to res");
+	system("cp policies.xml ..;rm -r policies.xml; cd ..;mkdir res;mv policies.xml ./res;echo Success");
+	/*system("cd ..");
+	system("mkdir res");
+	system("mv policies.xml ./res");
+	system("echo Policies.xml copied to res folder.");*/
 	cout << endl;
 	
 
