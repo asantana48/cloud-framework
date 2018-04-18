@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <stdlib.h>
 
 using namespace std;
 const string TAB = "        ";
@@ -162,6 +163,14 @@ int main()
 
 	cout << "\nOutput policies xml file to local directory.";
 
+
+
+
+	system("cp policies.xml ..;cd ..;mkdir res;mv policies.xml ./res;echo Moved policies.xml to res");
+	cout << endl;
+	
+
+
 	return 0;
 }
 
@@ -174,12 +183,10 @@ int main()
 			<lowerbound>52</lowerbound>
 			<upperbound>135</upperbound>
 		</policy>
-
 		<policy type="hitspolicy">
 			<name>MyHitsPolicy</name>
 			<minimumhits>24</minimumhits>
 		</policy>
-
 		<policy type="timepolicy">
 			<name>MyTimePolicy</name>
 			<years>1</years>
@@ -190,25 +197,21 @@ int main()
 			<seconds>0</seconds>
 		</policy>
 	</policylist>
-
 	<policylist>
 		<policy type="sizepolicy">
 			<name>size2</name>
 			<lowerbound>20</lowerbound>
 			<upperbound>180</upperbound>
 		</policy>
-
 		<policy type="hitspolicy">
 			<name>hitz2</name>
 			<minimumhits>24</minimumhits>
 		</policy>
-
 		<policy type="timepolicy">
 			<name>timepol2</name>
 			<hours>7</hours>
 			<seconds>4</seconds>
 		</policy>
 	</policylist>
-
 </policyfile>
 */
