@@ -115,7 +115,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
                     syslog(LOG_NOTICE, "File demoted:");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
-                    //this_thread::sleep_for (chrono::milliseconds(500));
+                    this_thread::sleep_for (chrono::milliseconds(1000));
                     syslog(LOG_NOTICE, "File demoted now!");
 
                     RC.Redis_HMSET(tempFD);
@@ -123,13 +123,13 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 
 
                     syslog(LOG_NOTICE, "Database updated");
-                    this_thread::sleep_for (chrono::milliseconds(500));  
-                    // this_thread::sleep_for (chrono::milliseconds(500)); 
+                    // this_thread::sleep_for (chrono::seconds(5));  
+                    this_thread::sleep_for (chrono::milliseconds(1000)); 
                           
                     RC.setIsMetadata(tempFD.localURI, true);
                     syslog(LOG_NOTICE, "Metadata flag set to true");
                     // this_thread::sleep_for (chrono::seconds(5));
-                    this_thread::sleep_for (chrono::milliseconds(500));
+                    this_thread::sleep_for (chrono::milliseconds(1000));
 
                     // Create a copy of the demoted file
                     ofstream newFile(tempFD.localURI);
@@ -146,7 +146,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int time) {
 
                     syslog(LOG_NOTICE, "new file closed!");
                     // this_thread::sleep_for (chrono::seconds(5));
-                    // this_thread::sleep_for (chrono::milliseconds(500));
+                    this_thread::sleep_for (chrono::milliseconds(2000));
 
                     // Update the entry in the database with the demoted file's metadata
                     RC.setIsLocal(tempFD.localURI, false); 
