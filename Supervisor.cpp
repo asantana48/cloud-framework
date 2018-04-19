@@ -184,11 +184,11 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
             syslog(LOG_NOTICE, "waiting...");
             this_thread::sleep_for (chrono::seconds(5));
             // Promote files
+            syslog(LOG_NOTICE, "----------PROMOTION START----------");
             syslog(LOG_NOTICE, "Querying database for promotion candidates.");
             for (auto p : pm.getPolicyList())
             {
                 vector<FileData> promotionList = getPromotionList(p);
-                syslog(LOG_NOTICE, "----------PROMOTION START----------");
                 for (FileData fd: promotionList) {
                     syslog(LOG_NOTICE, "Promoting file: ");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
