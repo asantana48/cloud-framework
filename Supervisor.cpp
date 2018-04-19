@@ -32,7 +32,8 @@ void updatePolicies(PolicyManager& pm, int time);
 
 
 // Migration management functions
-vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists);
+vector<FileData> findUnion(vector<vector<FileData>> &fileLists, vector<FileData> &unionVec, int &i);
 vector<FileData> getDemotionList(list<Policy*> policyCriteria);
 vector<FileData> getPromotionList(list<Policy*> policyCriteria);
 
@@ -107,8 +108,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
             {
                 demotionLists.push_back(getDemotionList(p));
             }
-
-            demotionList = findIntersection(demotionLists, intersection, i);
+            if (demotionLists.size() > 1)
+                demotionList = findIntersection(demotionLists, intersection, i);
 
             syslog(LOG_NOTICE, "----------DEMOTION START----------");
             for (FileData fd: demotionList) {
@@ -240,13 +241,13 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
             TimePolicy* tp = (TimePolicy*) p;
-            inTimeRange = RS.getFilesInLastModifiedTime(*tp);
+            inTimeRange = RS.getFilesOutOfLastModifiedTime(*tp);
             fileLists.push_back(inTimeRange);
         }
         // Grab and sort all files within times accessed range
         else if (p->type.compare("hitspolicy") == 0) {
             HitPolicy* hp = (HitPolicy*) p;
-            inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
+            inHitsRange = RS.getFilesOutOfTimesAccessedRange(*hp);
             fileLists.push_back(inHitsRange);
         }
     } 
@@ -311,7 +312,7 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
             TimePolicy* tp = (TimePolicy*) p;
-            inTimeRange = RS.getFilesOutOfLastModifiedTime(*tp);
+            inTimeRange = RS.getFilesInLastModifiedTime(*tp);
             fileLists.push_back(inTimeRange);
         }
         // Grab and sort all files within times accessed range
@@ -376,34 +377,38 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
 {
     Redis_Scanner RS;
     vector<FileData> temp;
-    // Error checking for empty list
-    if(fileLists.size() == 0)
-        return intersection;
-    // Error checking for single list
-    else if (fileLists.size() == 1)
-        intersection = fileLists[0];
-    // Two or more lists
-    else {       
-        if(i==0)
+    if(i==0)
+    {
+        set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
+        RS.sortVector(temp);
+        i = 2;
+        intersection = findIntersection(fileLists, temp, i);
+    }
+    else
+    {
+        while(i < fileLists.size())
         {
-            set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
+            set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
             RS.sortVector(temp);
-            i = 2;
+            i++;
             intersection = findIntersection(fileLists, temp, i);
-        }
-        else
-        {
-            while(i < fileLists.size())
-            {
-                set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
-                RS.sortVector(temp);
-                i++;
-                intersection = findIntersection(fileLists, temp, i);
-            }
         }
     }
     return intersection;
 }
+
+vector<FileData> findUnion(vector<vector<FileData>> &fileList)
+{
+    vector<FileData> unionVec;
+        
+    /*for (vector<FileData> fl: fileList) 
+    {
+
+    }*/
+
+    return unionVec;
+}
+
 
 void daemonize()
 {
