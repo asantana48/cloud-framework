@@ -120,6 +120,9 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     vector<FileData> promotionList;
     vector<vector<FileData>> promotionLists;
     vector<vector<FileData>> demotionLists;
+
+    demotionList.reserve(1);
+
     while (true) {
         if (ready) {
             // Demote files
