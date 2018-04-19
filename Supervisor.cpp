@@ -93,83 +93,94 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     Redis_Client RC;
     Redis_Scanner RS;
     FileData tempFD;
+    int i = 0;
+    vector<FileData> intersection;
+    vector<FileData> demotionList;
+    vector<FileData> promotionList;
+    vector<<vector<FileData>> promotionLists;
+    vector<vector<FileData>> demotionLists;
     while (true) {
         if (ready) {
             // Demote files
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
             for (auto p : pm.getPolicyList())
             {
-                vector<FileData> demotionList = getDemotionList(p);
-                syslog(LOG_NOTICE, "----------DEMOTION START----------");
-                for (FileData fd: demotionList) {
+                demotionLists.push_back(getDemotionList(p));
+            }
 
-                    syslog(LOG_NOTICE, "Demoting file: ");
-                    syslog(LOG_NOTICE, fd.fileName.c_str());
+            demotionList = findIntersection(demotionLists, intersection, i);
 
-                    if(RC.getIsOpen(fd.localURI))
-                    {
-                        syslog(LOG_NOTICE, "FILE IS CURRENTLY OPEN! SKIPPING DEMOTION");
-                    }
+            syslog(LOG_NOTICE, "----------DEMOTION START----------");
+            for (FileData fd: demotionList) {
 
-                    // Do not bounce back if under 5 minutes old
-                    else if (time(NULL) - fd.lastModified > 30) {
+                syslog(LOG_NOTICE, "Demoting file: ");
+                syslog(LOG_NOTICE, fd.fileName.c_str());
 
-                        if (fd.remoteURI == "") {
-                            RC.setRemoteURI(fd.localURI, fd.fileName);   
-                            fd.remoteURI = fd.fileName; 
-                        }
-                        
-                        tempFD = fd;
-
-                        // Demotion
-                        aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
-                        syslog(LOG_NOTICE, "File demoted:");
-                        syslog(LOG_NOTICE, fd.fileName.c_str());
-
-                        this_thread::sleep_for (chrono::milliseconds(1000));
-                        syslog(LOG_NOTICE, "File demoted now!");
-
-                        RC.Redis_HMSET(tempFD);
-
-
-
-
-                        syslog(LOG_NOTICE, "Database updated"); 
-                        this_thread::sleep_for (chrono::milliseconds(1000)); 
-                              
-                        RC.setIsMetadata(tempFD.localURI, true);
-                        syslog(LOG_NOTICE, "Metadata flag set to true");
-                        this_thread::sleep_for (chrono::milliseconds(1000));
-
-                        // Create a copy of the demoted file
-                        ofstream newFile(tempFD.localURI);
-
-                        // newFile << fd.fileName << " is being retrieved from long term storage. Please wait for updated thumbnail...";
-
-                        newFile.close();
-
-                        syslog(LOG_NOTICE, "new file closed!");
-                        this_thread::sleep_for (chrono::milliseconds(2000));
-
-                        RC.setIsLocal(tempFD.localURI, false); 
-
-
-                        syslog(LOG_NOTICE, "local flag set to false");
-
-                        // this_thread::sleep_for (chrono::seconds(5));
-                        this_thread::sleep_for (chrono::milliseconds(500));
-                    }
-                    
-                    else
-                    {
-                        syslog(LOG_NOTICE, "Bounceback prevented on %s.", fd.fileName.c_str());
-                    }
+                if(RC.getIsOpen(fd.localURI))
+                {
+                    syslog(LOG_NOTICE, "FILE IS CURRENTLY OPEN! SKIPPING DEMOTION");
                 }
 
-                demotionList.clear();
-                syslog(LOG_NOTICE, "----------DEMOTION END----------");
-                this_thread::sleep_for (chrono::seconds(5));
+                // Do not bounce back if under 5 minutes old
+                else if (time(NULL) - fd.lastModified > 30) {
+
+                    if (fd.remoteURI == "") {
+                        RC.setRemoteURI(fd.localURI, fd.fileName);   
+                        fd.remoteURI = fd.fileName; 
+                    }
+                    
+                    tempFD = fd;
+
+                    // Demotion
+                    aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
+                    syslog(LOG_NOTICE, "File demoted:");
+                    syslog(LOG_NOTICE, fd.fileName.c_str());
+
+                    this_thread::sleep_for (chrono::milliseconds(1000));
+                    syslog(LOG_NOTICE, "File demoted now!");
+
+                    RC.Redis_HMSET(tempFD);
+
+
+
+
+                    syslog(LOG_NOTICE, "Database updated"); 
+                    this_thread::sleep_for (chrono::milliseconds(1000)); 
+                          
+                    RC.setIsMetadata(tempFD.localURI, true);
+                    syslog(LOG_NOTICE, "Metadata flag set to true");
+                    this_thread::sleep_for (chrono::milliseconds(1000));
+
+                    // Create a copy of the demoted file
+                    ofstream newFile(tempFD.localURI);
+
+                    // newFile << fd.fileName << " is being retrieved from long term storage. Please wait for updated thumbnail...";
+
+                    newFile.close();
+
+                    syslog(LOG_NOTICE, "new file closed!");
+                    this_thread::sleep_for (chrono::milliseconds(2000));
+
+                    RC.setIsLocal(tempFD.localURI, false); 
+
+
+                    syslog(LOG_NOTICE, "local flag set to false");
+
+                    // this_thread::sleep_for (chrono::seconds(5));
+                    this_thread::sleep_for (chrono::milliseconds(500));
+                }
+                
+                else
+                {
+                    syslog(LOG_NOTICE, "Bounceback prevented on %s.", fd.fileName.c_str());
+                }
             }
+            
+            demotionList.clear();
+            intersection.clear();
+            syslog(LOG_NOTICE, "----------DEMOTION END----------");
+            this_thread::sleep_for (chrono::seconds(5));
+
             syslog(LOG_NOTICE, "waiting...");
             this_thread::sleep_for (chrono::seconds(5));
             // Promote files
