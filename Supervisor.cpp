@@ -129,10 +129,18 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     vector<vector<FileData>> demotionLists;
    
 
-    demotionList.reserve(1);
+    
 
     while (true) {
+        demotionList.empty();
+        demotionLists.empty();
+
+        promotionLists.empty();
+        promotionList.empty();
+
+        intersection.empty();    
         auto policyList = pm.getPolicyList();
+
         if (policyList.size() <= 0)
             syslog(LOG_NOTICE, "Migrator: Empty policy list.");
         else if (ready ) {
@@ -143,8 +151,9 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                 demotionLists.push_back(getDemotionList(p));
             }
 
-            if (demotionLists.size() > 1)
+            if (demotionLists.size() > 1) {
                 demotionList = findIntersection(demotionLists, intersection, i);
+            }
             else
                 demotionList = demotionLists[0];
 
