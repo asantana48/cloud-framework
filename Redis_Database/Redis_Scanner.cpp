@@ -232,11 +232,12 @@ void Redis_Scanner::updateFileInHitList(FileData& file)
 // Find files that meet time accessed demotion policy
 vector<FileData> Redis_Scanner::getFilesInTimesAccessedRange(HitPolicy policy)
 {
-	int hitsThreshold = policy.getHits();
+	int hitsThreshold = "(" + to_string(policy.getHits());
+
 
 	Redox rdx;
 	rdx.connect("localhost", 6379);
-	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Times_Accessed", "-inf", to_string(hitsThreshold)});
+	Command<vector<string>>& c = rdx.commandSync<vector<string>>({"ZRANGEBYSCORE", "Times_Accessed", "-inf", hitsThreshold});
 	vector<string> temp(c.reply());
 	Redis_Client RC;
 	vector<FileData> files;
