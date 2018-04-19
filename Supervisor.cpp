@@ -97,7 +97,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     vector<FileData> intersection;
     vector<FileData> demotionList;
     vector<FileData> promotionList;
-    vector<<vector<FileData>> promotionLists;
+    vector<vector<FileData>> promotionLists;
     vector<vector<FileData>> demotionLists;
     while (true) {
         if (ready) {
@@ -376,22 +376,30 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
 {
     Redis_Scanner RS;
     vector<FileData> temp;
-    if(i==0)
-    {
-        set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
-        RS.sortVector(temp);
-        i = 2;
-        intersection = findIntersection(fileLists, temp, i);
-    }
-
-    else
-    {
-        while(i < fileLists.size())
+    // Error checking for empty list
+    if(fileLists.size() == 0)
+        return intersection;
+    // Error checking for single list
+    else if (fileLists.size() == 1)
+        intersection = fileLists[0];
+    // Two or more lists
+    else {       
+        if(i==0)
         {
-            set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
+            set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
             RS.sortVector(temp);
-            i++;
+            i = 2;
             intersection = findIntersection(fileLists, temp, i);
+        }
+        else
+        {
+            while(i < fileLists.size())
+            {
+                set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
+                RS.sortVector(temp);
+                i++;
+                intersection = findIntersection(fileLists, temp, i);
+            }
         }
     }
     return intersection;
