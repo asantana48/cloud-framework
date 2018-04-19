@@ -103,15 +103,17 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                 syslog(LOG_NOTICE, "----------DEMOTION START----------");
                 for (FileData fd: demotionList) {
 
+                    syslog(LOG_NOTICE, "Demoting file: ");
+                    syslog(LOG_NOTICE, fd.fileName.c_str());
+
                     if(RC.getIsOpen(fd.localURI))
                     {
-                        syslog(LOG_NOTICE, "%s IS CURRENTLY OPEN! SKIPPING DEMOTION", fd.fileName);
+                        syslog(LOG_NOTICE, "FILE IS CURRENTLY OPEN! SKIPPING DEMOTION");
                     }
 
                     // Do not bounce back if under 5 minutes old
                     else if (time(NULL) - fd.lastModified > 30) {
-                        syslog(LOG_NOTICE, "Demoting file: ");
-                        syslog(LOG_NOTICE, fd.fileName.c_str());
+
                         if (fd.remoteURI == "") {
                             RC.setRemoteURI(fd.localURI, fd.fileName);   
                             fd.remoteURI = fd.fileName; 
@@ -142,7 +144,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                         // Create a copy of the demoted file
                         ofstream newFile(tempFD.localURI);
 
-                        // newFile << "This is a metadata stub for " << fd.fileName;
+                        // newFile << fd.fileName << " is being retrieved from long term storage. Please wait for updated thumbnail...";
 
                         newFile.close();
 
@@ -159,11 +161,14 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                     }
                     
                     else
+                    {
                         syslog(LOG_NOTICE, "Bounceback prevented on %s.", fd.fileName.c_str());
+                    }
                 }
 
                 demotionList.clear();
                 syslog(LOG_NOTICE, "----------DEMOTION END----------");
+                this_thread::sleep_for (chrono::seconds(5));
             }
             syslog(LOG_NOTICE, "waiting...");
             this_thread::sleep_for (chrono::seconds(5));
