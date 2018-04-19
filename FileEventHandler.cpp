@@ -106,8 +106,6 @@ void FileEventHandler::initializeINotify()
 			if(event->len)
 			{
 				string key = directory + event->name;
-
-				// Make sure we don't call open twice
 				
 				// If a file is created in the watched directory, add its local URI to the database
 				if (event->mask & IN_CREATE)
@@ -136,15 +134,13 @@ void FileEventHandler::initializeINotify()
 							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI); 
 							cout << "File promoted: " << fd.localURI << endl;
 							RC.setRemoteURI(fd.localURI, "");
-                    		RC.setIsLocal(fd.localURI, true);
-                    		RC.setIsMetadata(fd.localURI, false); 
+                    					RC.setIsLocal(fd.localURI, true);
+                    					RC.setIsMetadata(fd.localURI, false); 
 							this_thread::sleep_for (chrono::seconds(1));
 						} 
 					}
-
 					RC.setIsOpen(key, true);
 					RC.incrementTimesAccessed(key);
-
 					cout << "open_done\n";
 				}
 
@@ -154,11 +150,9 @@ void FileEventHandler::initializeINotify()
 				{
 					cout << "delete\n";
 					FileData fd = RC.Redis_HGETALL(key);
-			
 					cout << "DELETING\n";
 					RS.deleteFileFromAllSets(fd);
 					RC.Redis_DEL(key);
-					
 					cout << "delete_done\n";
 				}
 
@@ -224,7 +218,6 @@ void FileEventHandler::initializeINotify()
 						cout << "CLOSE NO WRITE\n";
 					}
 					cout << "FILE CLOSED!\n";
-
 				}
 				cout << event->mask << endl;
 
