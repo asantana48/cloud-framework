@@ -121,7 +121,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     Redis_Client RC;
     Redis_Scanner RS;
     FileData tempFD;
-    int i = 0;
+    
     vector<FileData> intersection;
     vector<FileData> demotionList;
     vector<FileData> promotionList;
@@ -139,23 +139,29 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
         promotionList.empty();
 
         intersection.empty();    
+        int i = 0;
+
+
         auto policyList = pm.getPolicyList();
+        syslog(LOG_NOTICE, "Number of policylists: %d", policyList.size());
 
         if (policyList.size() <= 0)
             syslog(LOG_NOTICE, "Migrator: Empty policy list.");
         else if (ready ) {
             // Demote files
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
-            for (auto p : pm.getPolicyList())
+            for (auto p : policyList)
             {
-                demotionLists.push_back(getDemotionList(p));
+                if (p.size() > 0)
+                    demotionLists.push_back(getDemotionList(p));
             }
 
             if (demotionLists.size() > 1) {
                 demotionList = findIntersection(demotionLists, intersection, i);
             }
-            else
+            else{
                 demotionList = demotionLists[0];
+            }
 
             syslog(LOG_NOTICE, "----------DEMOTION START----------");
             for (FileData fd: demotionList) {
@@ -436,10 +442,12 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
         RS.sortVector(temp);
         i = 2;
+        syslog(LOG_NOTICE, "Current items in intersection: %d", intersection.size());
         intersection = findIntersection(fileLists, temp, i);
     }
     else
     {
+        syslog(LOG_NOTICE, "Current items in intersection else: %d; i=%d; size=%d", intersection.size(), i, fileLists.size());
         while(i < fileLists.size())
         {
             set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
@@ -447,6 +455,7 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
             i++;
             intersection = findIntersection(fileLists, temp, i);
         }
+        syslog(LOG_NOTICE, "Current items in intersection elseend: %d", intersection.size());
     }
     return intersection;
 }

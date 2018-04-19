@@ -5,3 +5,4 @@ migrate
 supervise
 recall
 cloud_framework
+testbed/*
