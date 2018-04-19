@@ -342,7 +342,7 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
             TimePolicy* tp = (TimePolicy*) p;
-            inTimeRange = RS.getFilesInLastModifiedTime(*tp);
+            inTimeRange = RS.getFilesOutOfLastModifiedTime(*tp);
             fileLists.push_back(inTimeRange);
         }
         // Grab and sort all files within times accessed range

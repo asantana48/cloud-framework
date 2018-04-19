@@ -55,5 +55,20 @@ struct FileData
         s << isOpen;
         return s.str();
     }
+    
+    bool operator<(const FileData& rhs) const
+    {
+        return fileName.compare(rhs.fileName) < 0;
+    }
+
+    bool operator==(const FileData& rhs) const
+    {
+        return fileName.compare(rhs.fileName) == 0;
+    }
+
+    bool operator>(const FileData& rhs) const
+    {
+        return fileName.compare(rhs.fileName) > 0;
+    }
 };
 #endif
