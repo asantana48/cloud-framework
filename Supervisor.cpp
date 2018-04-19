@@ -442,12 +442,10 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
         RS.sortVector(temp);
         i = 2;
-        syslog(LOG_NOTICE, "Current items in intersection: %d", intersection.size());
         intersection = findIntersection(fileLists, temp, i);
     }
     else
     {
-        syslog(LOG_NOTICE, "Current items in intersection else: %d; i=%d; size=%d", intersection.size(), i, fileLists.size());
         while(i < fileLists.size())
         {
             set_intersection(fileLists[i].begin(), fileLists[i].end(), intersection.begin(), intersection.end(), back_inserter(temp), RS.orderFiles);
@@ -455,7 +453,6 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
             i++;
             intersection = findIntersection(fileLists, temp, i);
         }
-        syslog(LOG_NOTICE, "Current items in intersection elseend: %d", intersection.size());
     }
     return intersection;
 }
