@@ -25,7 +25,7 @@ private:
     Policy* parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur);
     Policy* parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur);
     void parsePolicyList(xmlDocPtr doc, xmlNodePtr cur);
-    std::string streamFile(const char* filename);
+    bool streamFile(const char* filename);
     
 public:
     PolicyManager() {}
@@ -33,7 +33,7 @@ public:
     
     void clear();
     
-    std::string parsePoliciesFromXMLFile(std::string filename);
+    bool parsePoliciesFromXMLFile(std::string filename);
 
     std::list<std::list<Policy*>> getPolicyList();
 };
