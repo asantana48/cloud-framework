@@ -108,7 +108,14 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                 demotionLists.push_back(getDemotionList(p));
             }
 
-            demotionList = findIntersection(demotionLists, intersection, i);
+            if (demotionLists.size() > 1)
+            {
+                demotionList = findIntersection(demotionLists, intersection, i);
+            }
+            else
+            {
+                demotionList = demotionLists[0];
+            }
 
             syslog(LOG_NOTICE, "----------DEMOTION START----------");
             for (FileData fd: demotionList) {
@@ -376,14 +383,14 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
 {
     Redis_Scanner RS;
     vector<FileData> temp;
-    // Error checking for empty list
-    if(fileLists.size() == 0)
-        return intersection;
-    // Error checking for single list
-    else if (fileLists.size() == 1)
-        intersection = fileLists[0];
-    // Two or more lists
-    else {       
+    // // Error checking for empty list
+    // if(fileLists.size() == 0)
+    //     return intersection;
+    // // Error checking for single list
+    // else if (fileLists.size() == 1)
+    //     intersection = fileLists[0];
+    // // Two or more lists
+    // else {       
         if(i==0)
         {
             set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
@@ -401,7 +408,7 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
                 intersection = findIntersection(fileLists, temp, i);
             }
         }
-    }
+    // }
     return intersection;
 }
 

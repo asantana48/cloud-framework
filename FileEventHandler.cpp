@@ -129,7 +129,6 @@ void FileEventHandler::initializeINotify()
 					FileData fd = RC.Redis_HGETALL(key);
 					cout << "open\n";
 					cout << key << endl;
-					int pos;
 					if (!RC.getIsLocal(key))
 					{
 						if (RC.getIsMetadata(key)) {
@@ -196,6 +195,17 @@ void FileEventHandler::initializeINotify()
 					cout << "movefrom\n";
 					if (strcmp(oldFileName.c_str(), "") == 0)
 					{
+						if (RC.getIsMetadata(key))
+						{
+							FileData fd = RC.Redis_HGETALL(key);
+							cout << "REQUEST\n";
+							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI); 
+							cout << "File promoted: " << fd.localURI << endl;
+							RC.setRemoteURI(fd.localURI, "");
+                    		RC.setIsLocal(fd.localURI, true);
+                    		RC.setIsMetadata(fd.localURI, false); 
+							this_thread::sleep_for (chrono::seconds(1));
+						}
 						oldFileName = key;
 					}
 					cout << "movefrom_done\n";

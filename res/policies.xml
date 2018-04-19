@@ -9,7 +9,6 @@
 	</policylist>
 	<policylist>
 		<policy type="sizepolicy">
-			<name>size</name>
 			<lowerbound>200</lowerbound>
 			<upperbound>300</upperbound>
 		</policy>
