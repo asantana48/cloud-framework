@@ -128,8 +128,11 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
             {
                 demotionLists.push_back(getDemotionList(p));
             }
+
             if (demotionLists.size() > 1)
                 demotionList = findIntersection(demotionLists, intersection, i);
+            else
+                demotionList = demotionLists[0];
 
             syslog(LOG_NOTICE, "----------DEMOTION START----------");
             for (FileData fd: demotionList) {
@@ -404,6 +407,7 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
 {
     Redis_Scanner RS;
     vector<FileData> temp;
+
     if(i==0)
     {
         set_intersection(fileLists[i].begin(), fileLists[i].end(), fileLists[i+1].begin(), fileLists[i+1].end(), back_inserter(temp), RS.orderFiles);
