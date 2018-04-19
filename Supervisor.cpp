@@ -32,8 +32,8 @@ void updatePolicies(PolicyManager& pm, int time);
 
 
 // Migration management functions
-vector<FileData> findIntersection(vector<vector<FileData>> &fileLists);
-vector<FileData> findUnion(vector<vector<FileData>> &fileLists, vector<FileData> &unionVec, int &i);
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
+vector<FileData> findUnion(vector<vector<FileData>> &fileLists);
 vector<FileData> getDemotionList(list<Policy*> policyCriteria);
 vector<FileData> getPromotionList(list<Policy*> policyCriteria);
 
@@ -59,6 +59,26 @@ int main(int argc, char** argv)
     syslog (LOG_NOTICE, "Started the migration supervisor.");
     
     ready = false;
+    /*FileData f1, f2, f3, f4;
+    f1.fileName = "A";
+    f2.fileName = "B";
+    f3.fileName = "B";
+    f4.fileName = "C";
+
+    vector<FileData> one;
+    vector<FileData> two;
+    vector<vector<FileData>> comb;
+    one.push_back(f1);
+    one.push_back(f2);
+    two.push_back(f3);
+    two.push_back(f4);
+    comb.push_back(one);
+    comb.push_back(two);
+
+    vector<FileData> tres;
+    tres = findUnion(comb);
+    for (FileData fd: tres)
+        cout << fd.fileName << "\n";*/
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
     std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
@@ -241,19 +261,18 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
         // Grab and sort all files within last modified time range
         else if (p->type.compare("timepolicy") == 0) {
             TimePolicy* tp = (TimePolicy*) p;
-            inTimeRange = RS.getFilesOutOfLastModifiedTime(*tp);
+            inTimeRange = RS.getFilesInLastModifiedTime(*tp);
             fileLists.push_back(inTimeRange);
         }
         // Grab and sort all files within times accessed range
         else if (p->type.compare("hitspolicy") == 0) {
             HitPolicy* hp = (HitPolicy*) p;
-            inHitsRange = RS.getFilesOutOfTimesAccessedRange(*hp);
+            inHitsRange = RS.getFilesInTimesAccessedRange(*hp);
             fileLists.push_back(inHitsRange);
         }
     } 
     // Grab all local files
     isLocal = RS.getLocalFiles();
-    fileLists.push_back(isLocal);
 
     for (FileData fd: isLocal) {
         string local = "Local file: " + fd.fileName;
@@ -273,8 +292,16 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
         syslog(LOG_NOTICE, local.c_str());
     }
 
-    // Find the intersection of the demotion policies
+ 
+    demotionList = findUnion(fileLists);
+
+    fileLists.clear();
+    fileLists.push_back(demotionList);
+    fileLists.push_back(isLocal);
+
     demotionList = findIntersection(fileLists, intersection, i);
+
+
 
     // Print files to demote
     syslog(LOG_NOTICE, "Demotion Intersection files: ");
@@ -401,11 +428,15 @@ vector<FileData> findUnion(vector<vector<FileData>> &fileList)
 {
     vector<FileData> unionVec;
         
-    /*for (vector<FileData> fl: fileList) 
+    for (vector<FileData> fl: fileList) 
     {
+        unionVec.insert(unionVec.end(), fl.begin(), fl.end());
+    }
+    //set<int> s( unionVec.begin(), unionVec.end() );
+    //unionVec.assign( s.begin(), s.end() );
 
-    }*/
-
+    sort( unionVec.begin(), unionVec.end() );
+    unionVec.erase( unique( unionVec.begin(), unionVec.end() ), unionVec.end() );
     return unionVec;
 }
 
