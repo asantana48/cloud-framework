@@ -32,7 +32,7 @@ void updatePolicies(PolicyManager& pm, int time);
 
 
 // Migration management functions
-vector<FileData> findIntersection(vector<vector<FileData>> &fileLists);
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
 vector<FileData> findUnion(vector<vector<FileData>> &fileLists, vector<FileData> &unionVec, int &i);
 vector<FileData> getDemotionList(list<Policy*> policyCriteria);
 vector<FileData> getPromotionList(list<Policy*> policyCriteria);
@@ -111,6 +111,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
 
             if (demotionLists.size() > 1)
                 demotionList = findIntersection(demotionLists, intersection, i);
+            else
+                demotionList = demotionLists[0];
 
             syslog(LOG_NOTICE, "----------DEMOTION START----------");
             for (FileData fd: demotionList) {

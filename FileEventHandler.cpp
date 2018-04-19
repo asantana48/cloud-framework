@@ -4,6 +4,7 @@
 #include "Redis_Database/include/Redis_Scanner.hpp"
 #include "lib/Constants.hpp"
 
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -63,7 +64,7 @@ void FileEventHandler::initializeINotify()
 	// wd = inotify(fd, file.localURI, IN_ACCESS | IN_DELETE | IN_MODIFY); and so on
 	wd[0] = inotify_add_watch(fd, directory.c_str(), IN_ALL_EVENTS);
 
-	wd[1] = inotify_add_watch(fd, trash.c_str(), IN_DELETE);
+	wd[1] = inotify_add_watch(fd, trash.c_str(), IN_ALL_EVENTS);
 
 	if (wd[0] == -1)
 	{
@@ -134,8 +135,8 @@ void FileEventHandler::initializeINotify()
 							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI); 
 							cout << "File promoted: " << fd.localURI << endl;
 							RC.setRemoteURI(fd.localURI, "");
-                    					RC.setIsLocal(fd.localURI, true);
-                    					RC.setIsMetadata(fd.localURI, false); 
+                    		RC.setIsLocal(fd.localURI, true);
+                    		RC.setIsMetadata(fd.localURI, false); 
 							this_thread::sleep_for (chrono::seconds(1));
 						} 
 					}
@@ -175,8 +176,27 @@ void FileEventHandler::initializeINotify()
 					cout << "moveto\n";
 					if (strcmp(oldFileName.c_str(), "") != 0)
 					{
+						// FileData fd = RC.Redis_HGETALL(oldFileName);
+						// this_thread::sleep_for(chrono::seconds(3));
+						// remove(key.c_str());
+						
 						RC.Redis_RENAME(oldFileName, key);
 						RC.setFileName(key, event->name);
+						// rename(oldFileName.c_str(), key.c_str());
+
+						// if (RC.getIsMetadata(key))
+						// {
+						// 	FileData fd = RC.Redis_HGETALL(key);
+						// 	cout << "REQUEST\n";
+						// 	aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI); 
+						// 	cout << "File promoted: " << fd.localURI << endl;
+						// 	RC.setRemoteURI(fd.localURI, "");
+      //               		RC.setIsLocal(fd.localURI, true);
+      //               		RC.setIsMetadata(fd.localURI, false); 
+						// 	this_thread::sleep_for (chrono::seconds(1));
+						// }
+						// remove(key.c_str());
+						// rename(oldFileName.c_str(), key.c_str());
 					}
 
 					oldFileName = "";
@@ -189,17 +209,6 @@ void FileEventHandler::initializeINotify()
 					cout << "movefrom\n";
 					if (strcmp(oldFileName.c_str(), "") == 0)
 					{
-						if (RC.getIsMetadata(key))
-						{
-							FileData fd = RC.Redis_HGETALL(key);
-							cout << "REQUEST\n";
-							aws.promoteObject(BUCKET, fd.remoteURI, fd.localURI); 
-							cout << "File promoted: " << fd.localURI << endl;
-							RC.setRemoteURI(fd.localURI, "");
-                    		RC.setIsLocal(fd.localURI, true);
-                    		RC.setIsMetadata(fd.localURI, false); 
-							this_thread::sleep_for (chrono::seconds(1));
-						}
 						oldFileName = key;
 					}
 					cout << "movefrom_done\n";
