@@ -96,16 +96,23 @@ void updatePolicies(PolicyManager& pm, int time) {
     while (true) {
         ready = false;
         pm.clear();
-        string resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
-        syslog(LOG_NOTICE, resp.c_str());
-
-        for(std::list<Policy*> policyList: pm.getPolicyList()){
-            for (Policy* p: policyList) {
-                std::string name = p->name;
-                syslog(LOG_NOTICE, name.c_str());
+        bool resp = pm.parsePoliciesFromXMLFile(POLICIES_PATH);
+        if (resp)
+        {
+            syslog(LOG_NOTICE, "Successfully parsed the policies.");
+            for(std::list<Policy*> policyList: pm.getPolicyList()){
+                for (Policy* p: policyList) {
+                    std::string name = p->name;
+                    syslog(LOG_NOTICE, name.c_str());
+                }
             }
+            ready = true;
         }
-        ready = true; 
+        else   
+        {
+            syslog(LOG_NOTICE, "Did not parse policies correctly");
+            ready = false;
+        }
         sleep(time);
     }
 }
@@ -120,11 +127,15 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     vector<FileData> promotionList;
     vector<vector<FileData>> promotionLists;
     vector<vector<FileData>> demotionLists;
+   
 
     demotionList.reserve(1);
 
     while (true) {
-        if (ready) {
+        auto policyList = pm.getPolicyList();
+        if (policyList.size() <= 0)
+            syslog(LOG_NOTICE, "Migrator: Empty policy list.");
+        else if (ready ) {
             // Demote files
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
             for (auto p : pm.getPolicyList())
@@ -147,10 +158,8 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                 {
                     syslog(LOG_NOTICE, "FILE IS CURRENTLY OPEN! SKIPPING DEMOTION");
                 }
-
-                // Do not bounce back if under 5 minutes old
-                else if (time(NULL) - fd.lastModified > 30) {
-
+                // Do not bounce back if under 1 minute old
+                else if (time(NULL) - fd.lastModified > 60) {
                     if (fd.remoteURI == "") {
                         RC.setRemoteURI(fd.localURI, fd.fileName);   
                         fd.remoteURI = fd.fileName; 
@@ -195,8 +204,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
 
                     // this_thread::sleep_for (chrono::seconds(5));
                     this_thread::sleep_for (chrono::milliseconds(500));
-                }
-                
+                }                
                 else
                 {
                     syslog(LOG_NOTICE, "Bounceback prevented on %s.", fd.fileName.c_str());
@@ -235,8 +243,11 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
             }
 
             syslog(LOG_NOTICE, "----------PROMOTION END----------");
-            sleep(migrateTime);
         }
+        else 
+            syslog(LOG_NOTICE, "Migrator: waiting on the policy list to be parsed.");
+
+        sleep(migrateTime);
     }
 }
 

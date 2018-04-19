@@ -172,39 +172,40 @@ Policy* PolicyManager::parsePolicy (xmlDocPtr doc, xmlNodePtr cur)
 	{
 		policy = parseTimePolicy(doc, cur);
 	}
+	else 
+		return NULL;
+
 	return policy;
 }
 
-std::string PolicyManager::streamFile(const char* filename) {
+bool PolicyManager::streamFile(const char* filename) {
 	xmlDocPtr doc;
-	xmlNodePtr cur;
+	xmlNodePtr cur, validator;
 	doc = xmlParseFile(filename);
 
 	//if the document isn't parsed correctly	
 	if (doc == NULL)
-	{
-		return "Document not successfully parsed.\n";
-		
-	}
+		return false;		
 
 	//if the document is empty
-	cur = xmlDocGetRootElement(doc);
-	if (cur == NULL)
-	{
-		return "Empty document.\n";
-	}
-	
-	//ensures xml file's root node is of type policyfile
-	if (xmlStrcmp(cur->name, (const xmlChar *) "policyfile"))
-	{
-		return "Document not of type \"policyfile\".";
-		xmlFreeDoc(doc);
-		
-	}
-	
+	validator = xmlDocGetRootElement(doc);
 
-	//parse through policylist to determine type of policy
-	cur = cur->xmlChildrenNode; //gets child node of cur
+	// Make sure the document is valid
+	if (validator == NULL)
+		return false;
+	else if (xmlStrcmp(validator->name, (const xmlChar *) "policyfile"))
+		return false;
+	else {
+		int children = xmlChildElementCount(validator);
+		if (children == 0)
+			return false;
+	}
+		
+	
+	
+	// Set the current marker where it needs to be
+	cur = xmlDocGetRootElement(doc);
+	cur = cur->xmlChildrenNode;
 	while(cur != NULL)
 	{
 		//if there is a match, calls function parsePolicyList
@@ -212,9 +213,10 @@ std::string PolicyManager::streamFile(const char* filename) {
 		{
 			parsePolicyList(doc, cur);
 		}
+
 		cur = cur->next;
 	}
-	return "Successfully parsed the policies.";
+	return true;
 }
 
 void PolicyManager::parsePolicyList (xmlDocPtr doc, xmlNodePtr cur)
@@ -228,24 +230,26 @@ void PolicyManager::parsePolicyList (xmlDocPtr doc, xmlNodePtr cur)
 		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policy")))
 		{
 			Policy* newPolicy = parsePolicy(doc, cur);
-			newList.push_back(newPolicy);
+			if (newPolicy != NULL)
+				newList.push_back(newPolicy);
 		}
 		cur = cur->next;
 	}
 
-	policyList.push_back(newList);
+	if (newList.size() > 0)
+		policyList.push_back(newList);
 }
 
-std::string PolicyManager::parsePoliciesFromXMLFile(std::string configFileName) 
+bool PolicyManager::parsePoliciesFromXMLFile(std::string configFileName) 
 {  
-    std::string msg = streamFile(configFileName.c_str());
+    bool success = streamFile(configFileName.c_str());
 
     /*
      * Cleanup function for the XML library.
      */
     xmlCleanupParser();
 
-    return msg;
+    return success;
 }
 
 std::list<std::list<Policy*>> PolicyManager::getPolicyList() {
