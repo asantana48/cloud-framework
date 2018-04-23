@@ -37,3 +37,10 @@ g++ ccurrados_test.cpp -o ccurrados_test -lAQR -lAQRDebugTraceInterface -lAQRPla
 
 Make sure you are root when running the test because only root has the VMs set up.
 
+## Server
+CentOS 7 doesn't have the correct gcc version in the default environment, however we can switch to a different toolset enable by running:
+
+scl enable devtoolset-7 bash
+
+Then make will work.
+
