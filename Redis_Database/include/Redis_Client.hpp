@@ -49,6 +49,7 @@ class Redis_Client
 	void setIsOpen(string, bool);
 	bool getIsOpen(string);
 	
+	void setLastTimeModified(string, time_t);
 	void updateLastTimeModified(string);
 	time_t getLastTimeModified(string);
 	

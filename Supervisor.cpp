@@ -42,8 +42,8 @@ int main(int argc, char** argv)
 {
     
     // Intervals for various tasks
-    int policyInterval = 15;
-    int migrationInterval = 18;
+    int policyInterval = 8;
+    int migrationInterval = 10;
 
     // Create necessary classes
     PolicyManager pm;    
@@ -162,16 +162,12 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
 
 
         auto policyList = pm.getPolicyList();
-        syslog(LOG_NOTICE, "Number of policylists: %d", policyList.size());
-
-        if (policyList.size() <= 0)
-            syslog(LOG_NOTICE, "Can't migrate with an invalid policylist.");
-        else if (ready ) {
+        if (policyList.size() > 0 && ready ) {
             // Demote files
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
             for (auto p : policyList)
             {
-                syslog(LOG_NOTICE, "Demotion Candidates:");
+                syslog(LOG_NOTICE, "<Demotion Candidates>");
                 if (p.size() > 0)
                     demotionLists.push_back(getDemotionList(p));
             }
@@ -229,10 +225,18 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                     this_thread::sleep_for (chrono::milliseconds(2000));
 
                     RC.setIsLocal(tempFD.localURI, false); 
-
-
                     syslog(LOG_NOTICE, "local flag set to false");
 
+                    this_thread::sleep_for (chrono::milliseconds(1000));
+                    RC.setLastTimeModified(tempFD.localURI, tempFD.lastModified);
+                    syslog(LOG_NOTICE, "time set to: %f", (double)tempFD.lastModified);
+
+                    this_thread::sleep_for (chrono::milliseconds(10));
+
+                    time_t last = RC.getLastTimeModified(tempFD.localURI);
+                    syslog(LOG_NOTICE, "CHECK: %f", (double) last);
+
+                
                     // this_thread::sleep_for (chrono::seconds(5));
                     this_thread::sleep_for (chrono::milliseconds(500));
                 }                
@@ -242,9 +246,13 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                 }
             }
             
+
             demotionList.clear();
             intersection.clear();
             syslog(LOG_NOTICE, "----------DEMOTION END----------");
+
+            this_thread::sleep_for (chrono::seconds(10));
+            
             this_thread::sleep_for (chrono::seconds(5));
 
             syslog(LOG_NOTICE, "waiting...");

@@ -210,7 +210,7 @@ void Redis_Client::setIsLocal(string key, bool isLocal)
 	rdx.disconnect();
 	FileData fd = Redis_HGETALL(key);
 	RS.updateFileInIsLocalList(fd);
-	updateLastTimeModified(key);
+	//updateLastTimeModified(key);
 }
 
 
@@ -280,6 +280,31 @@ bool Redis_Client::getIsOpen(string key)
 }
 
 
+void Redis_Client::setLastTimeModified(string key, time_t val)
+{
+	Redox rdx;
+	Redis_Scanner RS;
+	rdx.connect("localhost", 6379);
+	Command<int>& c = rdx.commandSync<int>({"HSET", key, "Last_Modified", ctime(&val)});
+	c.free();
+	rdx.disconnect();
+	FileData fd = Redis_HGETALL(key);
+	RS.updateFileInLastModifiedSet(fd);	
+}
+
+time_t Redis_Client::getLastTimeModified(string key)
+{
+	Redox rdx;
+	rdx.connect("localhost", 6379);
+	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Last_Modified"});
+	if(!c.ok()) {
+		cout << "Command has error code " << c.reply() << endl;
+	}
+	time_t time = stringToTime_t(c.reply());
+	c.free();
+	rdx.disconnect();
+	return time;
+}
 
 
 void Redis_Client::updateLastTimeModified(string key)
@@ -300,19 +325,7 @@ void Redis_Client::updateLastTimeModified(string key)
 	rdx.disconnect();
 }
 
-time_t Redis_Client::getLastTimeModified(string key)
-{
-	Redox rdx;
-	rdx.connect("localhost", 6379);
-	Command<string>& c = rdx.commandSync<string>({"HGET", key, "Last_Modified"});
-	if(!c.ok()) {
-		cout << "Command has error code " << c.reply() << endl;
-	}
-	time_t time = stringToTime_t(c.reply());
-	c.free();
-	rdx.disconnect();
-	return time;
-}
+
 
 
 time_t Redis_Client::stringToTime_t(string stringTime)
