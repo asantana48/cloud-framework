@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <signal.h>
+#include <list>
 
 // Uncomment to output debug trace messages to a log file instead of syslog
 #define OUTPUT_LOG_FILE  1
