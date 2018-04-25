@@ -178,10 +178,14 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
 
                 if(RC.getIsOpen(fd.localURI))
                 {
-                    syslog(LOG_NOTICE, "FILE IS CURRENTLY OPEN! SKIPPING DEMOTION");
+                    syslog(LOG_NOTICE, "File is open, skipping demotion!");
                 }
-                // Do not bounce back if under 5 minute old
-                else if (time(NULL) - fd.lastModified > 60) {
+                // Do not bounce back if under a minute old
+                else if (time(NULL) - fd.lastModified <= 60) {
+                    syslog(LOG_NOTICE, "Bounceback prevented on %s.", fd.fileName.c_str());
+                }                
+                else
+                {
                     if (fd.remoteURI == "") {
                         RC.setRemoteURI(fd.localURI, fd.fileName);   
                         fd.remoteURI = fd.fileName; 
@@ -190,23 +194,23 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                     tempFD = fd;
 
                     // Demotion
+                    syslog(LOG_NOTICE, "File demoted: %s", fd.fileName.c_str());
                     aws.demoteObject(BUCKET, fd.localURI, fd.remoteURI);
-                    syslog(LOG_NOTICE, "File demoted:");
-                    syslog(LOG_NOTICE, fd.fileName.c_str());
+                    
 
                     this_thread::sleep_for (chrono::milliseconds(1000));
-                    syslog(LOG_NOTICE, "File demoted now!");
+                    //syslog(LOG_NOTICE, "File demoted now!");
 
                     RC.Redis_HMSET(tempFD);
 
 
 
 
-                    syslog(LOG_NOTICE, "Database updated"); 
+                    syslog(LOG_NOTICE, "Database updated."); 
                     this_thread::sleep_for (chrono::milliseconds(1000)); 
                           
                     RC.setIsMetadata(tempFD.localURI, true);
-                    syslog(LOG_NOTICE, "Metadata flag set to true");
+                   // syslog(LOG_NOTICE, "Metadata flag set to true");
                     this_thread::sleep_for (chrono::milliseconds(1000));
 
                     // Create a copy of the demoted file
@@ -216,21 +220,17 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
 
                     newFile.close();
 
-                    syslog(LOG_NOTICE, "new file closed!");
+                    //syslog(LOG_NOTICE, "new file closed!");
                     this_thread::sleep_for (chrono::milliseconds(2000));
 
                     RC.setIsLocal(tempFD.localURI, false); 
-                    syslog(LOG_NOTICE, "Local  flag set to false");
+                    //syslog(LOG_NOTICE, "Local  flag set to false");
 
                     this_thread::sleep_for (chrono::milliseconds(1000));
                     RC.setLastTimeModified(tempFD.localURI, tempFD.lastModified);
                 
                     // this_thread::sleep_for (chrono::seconds(5));
                     this_thread::sleep_for (chrono::milliseconds(500));
-                }                
-                else
-                {
-                    syslog(LOG_NOTICE, "Bounceback prevented on %s.", fd.fileName.c_str());
                 }
             }
             
@@ -325,20 +325,20 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
 
     for (FileData fd: isLocal) {
         string local = "Local file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+        //syslog(LOG_NOTICE, local.c_str());
     }
     
     for (FileData fd: inSizeRange) {
         string local = "Size file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+        //syslog(LOG_NOTICE, local.c_str());
     }
     for (FileData fd: inTimeRange) {
         string local = "Time file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+        //syslog(LOG_NOTICE, local.c_str());
     }
     for (FileData fd: inHitsRange) {
         string local = "Hits file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+        //syslog(LOG_NOTICE, local.c_str());
     }
 
  
@@ -353,10 +353,10 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
 
 
     // Print files to demote
-    syslog(LOG_NOTICE, "Demotion Intersection files: ");
+    syslog(LOG_NOTICE, "Demotion union files: ");
     for (int i=0; i<demotionList.size(); i++)
     {
-        syslog(LOG_NOTICE, demotionList[i].fileName.c_str());
+        syslog(LOG_NOTICE, "%s", demotionList[i].fileName.c_str());
     }
     
 
@@ -406,19 +406,19 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
     
     for (FileData fd: inSizeRange) {
         string local = "Size file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+        //syslog(LOG_NOTICE, local.c_str());
     }
     for (FileData fd: inTimeRange) {
         string local = "Time file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+        //syslog(LOG_NOTICE, local.c_str());
     }
     for (FileData fd: inHitsRange) {
         string local = "Hits file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+     //   syslog(LOG_NOTICE, local.c_str());
     }
     for (FileData fd: isNonLocal) {
         string local = "Remote file: " + fd.fileName;
-        syslog(LOG_NOTICE, local.c_str());
+       // syslog(LOG_NOTICE, local.c_str());
     }
 
     // Find the intersection of the promotion policies
@@ -428,7 +428,7 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
     // Print files to promote
     for (int i=0; i<promotionList.size(); i++)
     {
-        syslog(LOG_NOTICE, promotionList[i].fileName.c_str());
+        syslog(LOG_NOTICE, "%s", promotionList[i].fileName.c_str());
     }
     return promotionList;
 }
