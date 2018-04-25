@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "Files in Aquari:\n";
 	for (std::string filename: ls){
-		cout << filename;
+		cout << filename << "\n";
 	}
 	return 0;
 }
