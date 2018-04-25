@@ -5,6 +5,7 @@
 
 PolicyManager::~PolicyManager()
 {
+	parseError = false;
 	this->clear();
 }
 
@@ -38,18 +39,26 @@ Policy* PolicyManager::parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur)
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
 			name = (char*) key;
 		}
+		try {
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"lowerbound"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				lower = std::stoi((char*) key);
+			}
 
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"lowerbound"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			lower = std::stoi((char*) key);
-		}
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"upperbound"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				upper = std::stoi((char*) key);
+			}
+		} catch (const std::invalid_argument& ia) {
+			return NULL;
+		} catch (const std::out_of_range& oor) {
+    		return NULL;
+  		}
+		if (lower > upper || lower < 0 || upper < 0)
+			return NULL;
 
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"upperbound"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			upper = std::stoi((char*) key);
-		}
 		cur = cur->next;
 	}
 	sizePolicy = new SizePolicy(lower, upper);
@@ -75,11 +84,20 @@ Policy* PolicyManager::parseHitsPolicy (xmlDocPtr doc, xmlNodePtr cur)
 			name = (char*) key;
 		}
 
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"minimumhits"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			min = std::stoi((char*) key); 
-		}
+		try {
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"minimumhits"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				min = std::stoi((char*) key); 
+			}
+		} catch (const std::invalid_argument& ia) {
+			return NULL;
+		} catch (const std::out_of_range& oor) {
+    		return NULL;
+  		}
+		if (min < 0)
+			return NULL;
+
 		cur = cur->next;
 	}
 	hitPolicy = new HitPolicy(min);
@@ -105,43 +123,60 @@ Policy* PolicyManager::parseTimePolicy (xmlDocPtr doc, xmlNodePtr cur)
 			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
 			name = (char*) key;
 		}
-
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"years"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			int temp = std::stoi((char *)key);
-			totalTimeInSeconds = totalTimeInSeconds + (temp * 365 * 24 * 60 * 60);
-		}
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"months"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			int temp = std::stoi((char *)key);
-			totalTimeInSeconds = totalTimeInSeconds + (temp * 30 * 24 * 60 * 60);
-		}
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"days"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			int temp = std::stoi((char *)key);
-			totalTimeInSeconds = totalTimeInSeconds + (temp * 24 * 60 * 60);
-		}
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"hours"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			int temp = std::stoi((char *)key);
-			totalTimeInSeconds = totalTimeInSeconds + (temp * 60 * 60);
-		}
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"minutes"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			int temp = std::stoi((char *)key);
-			totalTimeInSeconds = totalTimeInSeconds + (temp * 60);
-		}
-		if(!xmlStrcmp(cur->name, (const xmlChar *)"seconds"))
-		{
-			key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-			int temp = std::stoi((char *)key);
-			totalTimeInSeconds = totalTimeInSeconds + temp;
-		}
+		try{
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"years"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				int temp = std::stoi((char *)key);
+				totalTimeInSeconds = totalTimeInSeconds + (temp * 365 * 24 * 60 * 60);
+				if (temp < 0)
+					return NULL;
+			}
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"months"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				int temp = std::stoi((char *)key);
+				totalTimeInSeconds = totalTimeInSeconds + (temp * 30 * 24 * 60 * 60);
+				if (temp < 0)
+					return NULL;
+			}
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"days"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				int temp = std::stoi((char *)key);
+				totalTimeInSeconds = totalTimeInSeconds + (temp * 24 * 60 * 60);
+				if (temp < 0)
+					return NULL;
+			}
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"hours"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				int temp = std::stoi((char *)key);
+				totalTimeInSeconds = totalTimeInSeconds + (temp * 60 * 60);
+				if (temp < 0)
+					return NULL;
+			}
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"minutes"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				int temp = std::stoi((char *)key);
+				totalTimeInSeconds = totalTimeInSeconds + (temp * 60);
+				if (temp < 0)
+					return NULL;
+			}
+			if(!xmlStrcmp(cur->name, (const xmlChar *)"seconds"))
+			{
+				key = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+				int temp = std::stoi((char *)key);
+				totalTimeInSeconds = totalTimeInSeconds + temp;
+				if (temp < 0)
+					return NULL;
+			}
+		} catch (const std::invalid_argument& ia) {
+			return NULL;
+		} catch (const std::out_of_range& oor) {
+    		return NULL;
+  		}
 
 		cur = cur->next;
 	}
@@ -212,6 +247,8 @@ bool PolicyManager::streamFile(const char* filename) {
 		if ((!xmlStrcmp(cur->name, (const xmlChar *)"policylist")))
 		{
 			parsePolicyList(doc, cur);
+			if (parseError)
+				return false;
 		}
 
 		cur = cur->next;
@@ -232,6 +269,10 @@ void PolicyManager::parsePolicyList (xmlDocPtr doc, xmlNodePtr cur)
 			Policy* newPolicy = parsePolicy(doc, cur);
 			if (newPolicy != NULL)
 				newList.push_back(newPolicy);
+			else {
+				parseError = true;
+				return;
+			}
 		}
 		cur = cur->next;
 	}
@@ -242,6 +283,8 @@ void PolicyManager::parsePolicyList (xmlDocPtr doc, xmlNodePtr cur)
 
 bool PolicyManager::parsePoliciesFromXMLFile(std::string configFileName) 
 {  
+	parseError = false;
+
     bool success = streamFile(configFileName.c_str());
 
     /*

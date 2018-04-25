@@ -146,7 +146,9 @@ void Redis_Scanner::updateFileInLastModifiedSet(FileData& file)
 	Redox rdx;
 	rdx.connect("localhost", 6379);
 	Command<int>& c = rdx.commandSync<int>({"ZREM", "Last_Modified", key});
+	
 	addToLastModifiedSet(file);
+	
 	c.free();
 	rdx.disconnect();
 }

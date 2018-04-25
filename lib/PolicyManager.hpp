@@ -18,6 +18,8 @@
 
 class PolicyManager {
 private:
+
+    bool parseError;
     std::list<std::list<Policy*>> policyList;
 	
     Policy* parseSizePolicy (xmlDocPtr doc, xmlNodePtr cur);
