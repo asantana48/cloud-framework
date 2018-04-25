@@ -192,7 +192,7 @@ public:
             // free list
             for (i = 0; i < listDataSize; ++i)
             {
-                files.push(std::string(pListDataOut[i].fileName))
+                files.push_back(std::string(pListDataOut[i].fileName));
                 free(pListDataOut[i].fileName);
             }
             free(pListDataOut);
