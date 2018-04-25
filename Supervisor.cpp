@@ -32,7 +32,7 @@ void updatePolicies(PolicyManager& pm, int time);
 
 
 // Migration management functions
-vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i);
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists);
 vector<FileData> findUnion(vector<vector<FileData>> &fileLists);
 vector<FileData> getDemotionList(list<Policy*> policyCriteria);
 vector<FileData> getPromotionList(list<Policy*> policyCriteria);
@@ -42,8 +42,8 @@ int main(int argc, char** argv)
 {
     
     // Intervals for various tasks
-    int policyInterval = 10;
-    int migrationInterval = 30;
+    int policyInterval = 15;
+    int migrationInterval = 18;
 
     // Create necessary classes
     PolicyManager pm;    
@@ -59,26 +59,45 @@ int main(int argc, char** argv)
     syslog (LOG_NOTICE, "Started the migration supervisor.");
     
     ready = false;
-    /*FileData f1, f2, f3, f4;
-    f1.fileName = "A";
-    f2.fileName = "B";
-    f3.fileName = "B";
-    f4.fileName = "C";
 
+    // For testing
+    /*FileData f1, f2, f3, f4, f5, f6;
+    f1.localURI = "A";
+    f2.localURI = "B";
+    f3.localURI = "C";
+
+    f4.localURI = "B";
+    f5.localURI = "C";
+
+    f6.localURI = "B";
+
+    // Policylists
     vector<FileData> one;
     vector<FileData> two;
-    vector<vector<FileData>> comb;
+    vector<FileData> three;
+    
+    
     one.push_back(f1);
     one.push_back(f2);
-    two.push_back(f3);
+    one.push_back(f3);
+
     two.push_back(f4);
+    two.push_back(f5);
+
+    three.push_back(f6);
+
+    // List of lists
+    vector<vector<FileData>> comb;
     comb.push_back(one);
     comb.push_back(two);
+    comb.push_back(three);
 
     vector<FileData> tres;
-    tres = findUnion(comb);
+    tres = findIntersection(comb);
+
     for (FileData fd: tres)
-        cout << fd.fileName << "\n";*/
+        cout << fd.localURI << "\n";*/
+
     std::thread policyT(updatePolicies, std::ref(pm), policyInterval);
     std::thread filesT(manageFiles, std::ref(pm), std::ref(aws), migrationInterval);
     
@@ -152,16 +171,13 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
             for (auto p : policyList)
             {
+                syslog(LOG_NOTICE, "Demotion Candidates:");
                 if (p.size() > 0)
                     demotionLists.push_back(getDemotionList(p));
             }
 
-            if (demotionLists.size() > 1) {
-                demotionList = findIntersection(demotionLists, intersection, i);
-            }
-            else{
-                demotionList = demotionLists[0];
-            }
+            demotionList = findIntersection(demotionLists);
+          
 
             syslog(LOG_NOTICE, "----------DEMOTION START----------");
             for (FileData fd: demotionList) {
@@ -233,13 +249,21 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
 
             syslog(LOG_NOTICE, "waiting...");
             this_thread::sleep_for (chrono::seconds(5));
+
             // Promote files
-            syslog(LOG_NOTICE, "----------PROMOTION START----------");
             syslog(LOG_NOTICE, "Querying database for promotion candidates.");
+            auto promotionCandidates = pm.getPolicyList();
+            
             for (auto p : pm.getPolicyList())
             {
-                vector<FileData> promotionList = getPromotionList(p);
-                for (FileData fd: promotionList) {
+                syslog(LOG_NOTICE, "<Promotion Candidates>");
+                if (p.size() > 0)
+                    promotionLists.push_back(getPromotionList(p));
+            }
+            promotionList = findUnion(promotionLists);
+
+            syslog(LOG_NOTICE, "----------PROMOTION START----------");
+            for (FileData fd: promotionList) {
                     syslog(LOG_NOTICE, "Promoting file: ");
                     syslog(LOG_NOTICE, fd.fileName.c_str());
 
@@ -254,9 +278,6 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                     RC.setIsLocal(fd.localURI, true);
                     RC.setIsMetadata(fd.localURI, false);
                 }
-                promotionList.clear();
-            }
-
             syslog(LOG_NOTICE, "----------PROMOTION END----------");
         }
         else 
@@ -331,7 +352,7 @@ vector<FileData> getDemotionList(list<Policy*> policyCriteria)
     fileLists.push_back(demotionList);
     fileLists.push_back(isLocal);
 
-    demotionList = findIntersection(fileLists, intersection, i);
+    demotionList = findIntersection(fileLists);
 
 
 
@@ -405,7 +426,7 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
     }
 
     // Find the intersection of the promotion policies
-    promotionList = findIntersection(fileLists, intersection, i);
+    promotionList = findIntersection(fileLists);
 
     syslog(LOG_NOTICE, "Promotion Intersection files: ");
     // Print files to promote
@@ -432,7 +453,7 @@ vector<FileData> getPromotionList(list<Policy*> policyCriteria)
 * @return vector<FileData> intersection
 *   Contains the FileData objects that were in all of the fileLists vectors
 */
-vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
+/*vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<FileData> &intersection, int &i)
 {
     Redis_Scanner RS;
     vector<FileData> temp;
@@ -455,21 +476,46 @@ vector<FileData> findIntersection(vector<vector<FileData>> &fileLists, vector<Fi
         }
     }
     return intersection;
+}*/
+vector<FileData> findIntersection(vector<vector<FileData>> &fileLists)
+{
+    Redis_Scanner RS;
+    vector<FileData> cleared, intersect;
+
+    int length = fileLists.size();
+
+    // Return blank vector
+    if (length == 0)
+        return intersect;
+    // Return the only list in the list-of-lists
+    else if (length == 1)
+        return fileLists[0];
+    
+    // Return the intersection
+    set_intersection(fileLists[0].begin(), fileLists[0].end(), fileLists[1].begin(), fileLists[1].end(), back_inserter(intersect), RS.orderFiles);
+
+    for (int i = 2; i < length; i++) {
+        set_intersection(intersect.begin(), intersect.end(), fileLists[i].begin(), fileLists[i].end(), back_inserter(cleared), RS.orderFiles);
+        intersect = cleared;
+        cleared.clear();
+    }
+    RS.sortVector(intersect);
+    return intersect;
 }
 
 vector<FileData> findUnion(vector<vector<FileData>> &fileList)
 {
+    Redis_Scanner RS;
     vector<FileData> unionVec;
         
     for (vector<FileData> fl: fileList) 
     {
         unionVec.insert(unionVec.end(), fl.begin(), fl.end());
     }
-    //set<int> s( unionVec.begin(), unionVec.end() );
-    //unionVec.assign( s.begin(), s.end() );
 
     sort( unionVec.begin(), unionVec.end() );
     unionVec.erase( unique( unionVec.begin(), unionVec.end() ), unionVec.end() );
+    RS.sortVector(unionVec);
     return unionVec;
 }
 
