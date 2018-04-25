@@ -165,7 +165,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
         syslog(LOG_NOTICE, "Number of policylists: %d", policyList.size());
 
         if (policyList.size() <= 0)
-            syslog(LOG_NOTICE, "Migrator: Empty policy list.");
+            syslog(LOG_NOTICE, "Can't migrate with an invalid policylist.");
         else if (ready ) {
             // Demote files
             syslog(LOG_NOTICE, "Querying database for demotion candidates.");
