@@ -166,12 +166,12 @@ public:
         int                       listDataSize = 0;
         int                       i;
 
-        AQR_Initialize(TMX_SDK__DBTRACE_VERBOSITY__ERROR, 5)
+        AQR_Initialize(TMX_SDK__DBTRACE_VERBOSITY__ERROR, 5);
         status = resolveUrl(url,rootPath,0,resolvedPath);
 
         if (status)
         {
-            return NULL;
+            return files;
         }
 
         status = AQR_List(
@@ -185,12 +185,12 @@ public:
 
         if (status)
         {
-            return NULL;
+            return files;
         }
         if (pListDataOut)
         {
             // free list
-            for (i = 0; (i < listDataSize) && g_run; ++i)
+            for (i = 0; i < listDataSize; ++i)
             {
                 files.push(std::string(pListDataOut[i].fileName))
                 free(pListDataOut[i].fileName);
