@@ -180,7 +180,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                 {
                     syslog(LOG_NOTICE, "FILE IS CURRENTLY OPEN! SKIPPING DEMOTION");
                 }
-                // Do not bounce back if under 1 minute old
+                // Do not bounce back if under 5 minute old
                 else if (time(NULL) - fd.lastModified > 60) {
                     if (fd.remoteURI == "") {
                         RC.setRemoteURI(fd.localURI, fd.fileName);   
@@ -220,17 +220,10 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                     this_thread::sleep_for (chrono::milliseconds(2000));
 
                     RC.setIsLocal(tempFD.localURI, false); 
-                    syslog(LOG_NOTICE, "local flag set to false");
+                    syslog(LOG_NOTICE, "Local  flag set to false");
 
                     this_thread::sleep_for (chrono::milliseconds(1000));
                     RC.setLastTimeModified(tempFD.localURI, tempFD.lastModified);
-                    syslog(LOG_NOTICE, "time set to: %f", (double)tempFD.lastModified);
-
-                    this_thread::sleep_for (chrono::milliseconds(10));
-
-                    time_t last = RC.getLastTimeModified(tempFD.localURI);
-                    syslog(LOG_NOTICE, "CHECK: %f", (double) last);
-
                 
                     // this_thread::sleep_for (chrono::seconds(5));
                     this_thread::sleep_for (chrono::milliseconds(500));
