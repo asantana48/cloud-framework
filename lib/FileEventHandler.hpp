@@ -6,7 +6,7 @@
 #include "FileUtils.hpp"
 #include "Constants.hpp"
 #include "FileEventHandler.hpp"
-#include "Aquari.h"
+//#include "Aquari.h"
 
 #include <sys/inotify.h>
 #include <iostream>
