@@ -284,6 +284,7 @@ void PolicyManager::parsePolicyList (xmlDocPtr doc, xmlNodePtr cur)
 bool PolicyManager::parsePoliciesFromXMLFile(std::string configFileName) 
 {  
 	parseError = false;
+
     bool success = streamFile(configFileName.c_str());
 
     /*

@@ -129,7 +129,7 @@ void updatePolicies(PolicyManager& pm, int time) {
         }
         else   
         {
-            syslog(LOG_NOTICE, "Did not parse policies correctly");
+            syslog(LOG_NOTICE, "Policies failed to parse; are the values and XML correct?");
             ready = false;
         }
         sleep(time);
@@ -151,14 +151,11 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
     
 
     while (true) {
-        demotionList.empty();
-        demotionLists.empty();
-
-        promotionLists.empty();
-        promotionList.empty();
-
-        intersection.empty();    
-        int i = 0;
+        demotionList.clear();
+        demotionLists.clear();
+        promotionLists.clear();
+        promotionList.clear();
+        intersection.clear(); 
 
 
         auto policyList = pm.getPolicyList();
@@ -171,9 +168,7 @@ void manageFiles(PolicyManager& pm, AWSConnector& aws, int migrateTime) {
                 if (p.size() > 0)
                     demotionLists.push_back(getDemotionList(p));
             }
-
             demotionList = findIntersection(demotionLists);
-          
 
             syslog(LOG_NOTICE, "----------DEMOTION START----------");
             for (FileData fd: demotionList) {
