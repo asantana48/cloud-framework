@@ -1,0 +1,39 @@
+#
+# Copyright, 2014-2017, Concurrent Computer Corporation,
+#    as an unpublished work.  This document contains confidential and
+#    proprietary information, including trade secrets, of Concurrent
+#    Computer Corp.  Any use, reproduction, or transmission of any part
+#    or the whole of this document is expressly prohibited without the
+#    prior written permission of Concurrent Computer Corp.
+#
+
+
+################################################################################
+# Makefile for building the AQR_test directory.
+################################################################################
+
+
+################################################################################
+# Root definitions.
+################################################################################
+
+TMX_SDK_ROOT=../..
+
+LIB_DIR=${TMX_SDK_ROOT}/usr/lib64
+SRC_NAME=AQR_mod_test
+PROG_NAME=AQR_mod_test
+INCLUDES=-I${TMX_SDK_ROOT} -I${TMX_SDK_ROOT}/src -I${TMX_SDK_ROOT}/usr/include/AQR
+LDFLAGS=-g -L${LIB_DIR} -Wl,-z,defs -Wl,-rpath=${INST_LIB_DIR} -Wl,-rpath-link=${LIB_DIR}
+LIBS=\
+  AQR\
+  AQRDebugTraceInterface\
+  AQRPlatformIndependentInterface\
+  AQRMemoryManagementInterface\
+  pthread
+
+all: $(SRC_NAME).cpp
+	g++ -g -Wall -Werror ${INCLUDES} $(SRC_NAME).cpp $(LDFLAGS) $(addprefix -l,${LIBS}) -o $(PROG_NAME)
+
+clean:
+	rm -rf obj $(PROG_NAME)
+
