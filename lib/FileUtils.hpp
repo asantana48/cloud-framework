@@ -94,10 +94,10 @@
 class FileUtils {
 private:
     // Singleton pattern
-    FileUtils() {};
+    /*FileUtils() {};
     FileUtils(FileUtils const&) {};
     FileUtils& operator=(FileUtils const&){};
-    static FileUtils* fu_instance;
+    static FileUtils* fu_instance;*/
 
     // Resolve AQR path
     TMX_SDK__STATUS_CODE_e
@@ -125,11 +125,11 @@ private:
 
 public:
     // Get instance
-    static FileUtils* GetInstance(){
+    /*static FileUtils* GetInstance(){
         if (!fu_instance)
             fu_instance = new FileUtils();
         return fu_instance;
-    }
+    }*/
     /*
     int Read(int handle, char* data, int bytesToRead, int &bytesRead) {
         bytesRead = 0;

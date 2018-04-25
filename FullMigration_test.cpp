@@ -2,6 +2,6 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-	FileUtils* fUtil = FileUtils::GetInstance();
+	FileUtils fUtil;
 	return 0;
 }
