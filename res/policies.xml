@@ -1,18 +1,72 @@
 <?xml version="1.0" ?>
 <policyfile>
-	<policylist>
-		<policy type="sizepolicy">
-			<name>size</name>
-			<lowerbound>0</lowerbound>
-			<upperbound>100</upperbound>
-		</policy>
-	</policylist>
-	<policylist>
-		<policy type="sizepolicy">
-			<lowerbound>200</lowerbound>
-			<upperbound>300</upperbound>
-		</policy>
-	</policylist>
+        <policylist>
+                <policy type="sizepolicy">
+                        <name>size1</name>
+                        <lowerbound>0</lowerbound>
+                        <upperbound>500000000</upperbound>
+                </policy>
+
+                <policy type="hitspolicy">
+                        <name>hits1</name>
+                        <minimumhits>5</minimumhits>
+                </policy>
+
+                <policy type="timepolicy">
+                        <name>time1</name>
+                        <years>0</years>
+                        <months>0</months>
+                        <days>1</days>
+                        <hours>12</hours>
+                        <minutes>0</minutes>
+                        <seconds>0</seconds>
+                </policy>
+
+                <policy type="sizepolicy">
+                        <name>size2</name>
+                        <lowerbound>500000001</lowerbound>
+                        <upperbound>1000000000</upperbound>
+                </policy>
+
+                <policy type="hitspolicy">
+                        <name>hits2</name>
+                        <minimumhits>2</minimumhits>
+                </policy>
+
+                <policy type="timepolicy">
+                        <name>time2</name>
+                        <years>0</years>
+                        <months>0</months>
+                        <days>14</days>
+                        <hours>0</hours>
+                        <minutes>0</minutes>
+                        <seconds>0</seconds>
+                </policy>
+
+        </policylist>
+
+        <policylist>
+                <policy type="sizepolicy">
+                        <name>size3</name>
+                        <lowerbound>1000000000</lowerbound>
+                        <upperbound>10000000000</upperbound>
+                </policy>
+
+                <policy type="hitspolicy">
+                        <name>hits3</name>
+                        <minimumhits>1</minimumhits>
+                </policy>
+
+                <policy type="timepolicy">
+                        <name>time3</name>
+                        <years>0</years>
+                        <months>1</months>
+                        <days>0</days>
+                        <hours>0</hours>
+                        <minutes>0</minutes>
+                        <seconds>0</seconds>
+                </policy>
+
+        </policylist>
+
 </policyfile>
-
-
